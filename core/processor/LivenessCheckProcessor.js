@@ -1,5 +1,5 @@
-import { FaceTecSDK } from '../core-sdk/FaceTecSDK.js/FaceTecSDK';
-import { Crypto } from '../../crypto/crypto';
+import { FaceTecSDK } from "../core-sdk/FaceTecSDK.js/FaceTecSDK";
+import { Crypto } from "../../src/views/Pages/FaceTec/crypto/crypto";
 
 //
 // Este é um exemplo de classe independente para realizar verificações de vivacidade com o FaceTec SDK.
@@ -28,7 +28,7 @@ export const LivenessCheckProcessor = (function () {
         FaceTecSDK.FaceTecSessionStatus.SessionCompletedSuccessfully
       ) {
         console.log(
-          'A sessão não foi completada com sucesso. Cancelando. Status da Sessão: ' +
+          "A sessão não foi completada com sucesso. Cancelando. Status da Sessão: " +
             FaceTecSDK.FaceTecSessionStatus[sessionResult.status]
         );
         _this.latestNetworkRequest.abort();
@@ -58,13 +58,12 @@ export const LivenessCheckProcessor = (function () {
       //
       _this.latestNetworkRequest = new XMLHttpRequest();
       _this.latestNetworkRequest.open(
-        'POST',
-        process.env.REACT_APP_BASE_URL +
-          '/facecaptcha/service/captcha/3d/liveness'
+        "POST",
+        "https://comercial.certiface.com.br/facecaptcha/service/captcha/3d/liveness"
       );
       _this.latestNetworkRequest.setRequestHeader(
-        'Content-Type',
-        'application/json'
+        "Content-Type",
+        "application/json"
       );
       _this.latestNetworkRequest.onreadystatechange = function () {
         //
@@ -82,20 +81,20 @@ export const LivenessCheckProcessor = (function () {
             if (responseJSON.codID) {
               // Demonstra a configuração dinâmica da mensagem da tela de sucesso.
               FaceTecSDK.FaceTecCustomization.setOverrideResultScreenSuccessMessage(
-                'Liveness\nConfirmado'
+                "Liveness\nConfirmado"
               );
               // Na v9.2.0+, basta passar scanResultBlob para a função continueToNextStep para avançar o fluxo do usuário.
               // scanResultBlob é um blob proprietário e criptografado que controla a lógica do que acontece em seguida para o usuário.
               faceScanResultCallback.proceedToNextStep(scanResultBlob);
             } else {
               // CASE: resposta INESPERADA da API. Nosso código de exemplo desliga um booleano wasProcessed na raiz do objeto JSON --> Você define seus próprios contratos de API consigo mesmo e pode optar por fazer algo diferente aqui com base no erro.
-              console.log('Resposta inesperada da API. Cancelando.');
+              console.log("Resposta inesperada da API. Cancelando.");
               faceScanResultCallback.cancel();
             }
           } catch (_e) {
             // CASE: Falha ao analisar a resposta em JSON --> Você define seus próprios contratos de API consigo mesmo e pode optar por fazer algo diferente aqui com base no erro. O código sólido do lado do servidor deve garantir que você não chegue a esse caso.
             console.log(
-              'Ocorreu uma exceção ao manipular a resposta da API. Cancelando.'
+              "Ocorreu uma exceção ao manipular a resposta da API. Cancelando."
             );
             faceScanResultCallback.cancel();
           }
@@ -103,7 +102,7 @@ export const LivenessCheckProcessor = (function () {
       };
       _this.latestNetworkRequest.onerror = function () {
         // CASE: A própria solicitação de rede está com erro --> Você define seus próprios contratos de API consigo mesmo e pode optar por fazer algo diferente aqui com base no erro.
-        console.log('Erro de requisição de HTTP. Cancelando.');
+        console.log("Erro de requisição de HTTP. Cancelando.");
         faceScanResultCallback.cancel();
       };
       //
@@ -137,7 +136,7 @@ export const LivenessCheckProcessor = (function () {
         if (_this.latestNetworkRequest.readyState === XMLHttpRequest.DONE) {
           return;
         }
-        faceScanResultCallback.uploadMessageOverride('Ainda enviando...');
+        faceScanResultCallback.uploadMessageOverride("Ainda enviando...");
       }, 6000);
     };
     //

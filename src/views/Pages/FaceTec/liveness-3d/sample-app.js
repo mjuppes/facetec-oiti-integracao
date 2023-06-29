@@ -1,44 +1,44 @@
-import { FaceCaptcha } from '@oiti/facecaptcha-core';
-import axios from 'axios';
-import { FaceTecSDK } from '../core/core-sdk/FaceTecSDK.js/FaceTecSDK';
-import { ThemeHelpers } from '../core/utilities/ThemeHelpers';
-import { LivenessCheckProcessor } from '../core/processor/LivenessCheckProcessor';
-import { Config } from '../Config';
-import { SampleAppUtilities } from '../core/utilities/SampleAppUtilities';
-import * as FaceTecStringsPtBr from '../core-sdk-optional/FaceTecStrings.pt-br';
+import { FaceCaptcha } from "@oiti/facecaptcha-core";
+import axios from "axios";
+import { FaceTecSDK } from "../../../../../core/core-sdk/FaceTecSDK.js/FaceTecSDK";
+import { ThemeHelpers } from "../../../../../core/utilities/ThemeHelpers";
+import { LivenessCheckProcessor } from "../../../../../core/processor/LivenessCheckProcessor";
+import { Config } from "../Config";
+import { SampleAppUtilities } from "../../../../../core/utilities/SampleAppUtilities";
+import * as FaceTecStringsPtBr from "../../../../../core-sdk-optional/FaceTecStrings.pt-br";
 
 export var SampleApp = (function () {
-  let resultProductKey = '';
-  let resultSessionToken = '';
+  let resultProductKey = "";
+  let resultSessionToken = "";
 
-  let latestEnrollmentIdentifier = '';
+  let latestEnrollmentIdentifier = "";
   let latestSessionResult = null;
   let latestIDScanResult = null;
   let latestProcessor;
 
-  const status = 'Inicializando...';
-  const deviceKeyIdentifier = 'dF2CabwQ6OCLFJaV2QqZhP7OUErHv0uz';
+  const status = "Inicializando...";
+  const deviceKeyIdentifier = "dF2CabwQ6OCLFJaV2QqZhP7OUErHv0uz";
   const publicFaceScanEncryptionKey =
-    '-----BEGIN PUBLIC KEY-----\n' +
-    'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5PxZ3DLj+zP6T6HFgzzk\n' +
-    'M77LdzP3fojBoLasw7EfzvLMnJNUlyRb5m8e5QyyJxI+wRjsALHvFgLzGwxM8ehz\n' +
-    'DqqBZed+f4w33GgQXFZOS4AOvyPbALgCYoLehigLAbbCNTkeY5RDcmmSI/sbp+s6\n' +
-    'mAiAKKvCdIqe17bltZ/rfEoL3gPKEfLXeN549LTj3XBp0hvG4loQ6eC1E1tRzSkf\n' +
-    'GJD4GIVvR+j12gXAaftj3ahfYxioBH7F7HQxzmWkwDyn3bqU54eaiB7f0ftsPpWM\n' +
-    'ceUaqkL2DZUvgN0efEJjnWy5y1/Gkq5GGWCROI9XG/SwXJ30BbVUehTbVcD70+ZF\n' +
-    '8QIDAQAB\n' +
-    '-----END PUBLIC KEY-----';
+    "-----BEGIN PUBLIC KEY-----\n" +
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5PxZ3DLj+zP6T6HFgzzk\n" +
+    "M77LdzP3fojBoLasw7EfzvLMnJNUlyRb5m8e5QyyJxI+wRjsALHvFgLzGwxM8ehz\n" +
+    "DqqBZed+f4w33GgQXFZOS4AOvyPbALgCYoLehigLAbbCNTkeY5RDcmmSI/sbp+s6\n" +
+    "mAiAKKvCdIqe17bltZ/rfEoL3gPKEfLXeN549LTj3XBp0hvG4loQ6eC1E1tRzSkf\n" +
+    "GJD4GIVvR+j12gXAaftj3ahfYxioBH7F7HQxzmWkwDyn3bqU54eaiB7f0ftsPpWM\n" +
+    "ceUaqkL2DZUvgN0efEJjnWy5y1/Gkq5GGWCROI9XG/SwXJ30BbVUehTbVcD70+ZF\n" +
+    "8QIDAQAB\n" +
+    "-----END PUBLIC KEY-----";
 
-  const staticAppKey = window.localStorage.getItem('appkey');
+  const staticAppKey = window.localStorage.getItem("appkey");
 
-  const staticUserAgent = FaceTecSDK.createFaceTecAPIUserAgentString('');
+  const staticUserAgent = FaceTecSDK.createFaceTecAPIUserAgentString("");
 
   const loadAssets = () => {
     // Defina um caminho de diretório para outros recursos do FaceTec Browser SDK.
-    FaceTecSDK.setResourceDirectory('../core-sdk/FaceTecSDK.js/resources');
+    FaceTecSDK.setResourceDirectory("../core-sdk/FaceTecSDK.js/resources");
 
     // Defina o caminho do diretório para as imagens necessárias do FaceTec Browser SDK.
-    FaceTecSDK.setImagesDirectory('../core-sdk/FaceTec_images');
+    FaceTecSDK.setImagesDirectory("../core-sdk/FaceTec_images");
 
     // Defina as personalizações do FaceTec Device SDK.
     ThemeHelpers.setAppTheme(ThemeHelpers.getCurrentTheme());
@@ -89,7 +89,7 @@ export var SampleApp = (function () {
 
   const getProductionKey = async () => {
     const facecaptchaService = new FaceCaptcha(axios, {
-      BaseURL: 'https://comercial.certiface.com.br',
+      BaseURL: "https://comercial.certiface.com.br",
     });
 
     const result = await facecaptchaService.getProductionKey({
@@ -103,7 +103,7 @@ export var SampleApp = (function () {
 
   const getSessionToken = async () => {
     const facecaptchaService = new FaceCaptcha(axios, {
-      BaseURL: process.env.REACT_APP_BASE_URL,
+      BaseURL: "https://comercial.certiface.com.br",
       timeout: 20000,
     });
 
@@ -114,7 +114,7 @@ export var SampleApp = (function () {
 
     resultSessionToken = result.sessionToken;
 
-    window.localStorage.setItem('hasLiveness', 'true');
+    window.localStorage.setItem("hasLiveness", "true");
 
     // Obtenha um token de sessão do FaceTec SDK e inicie o 3D Liveness Check.
     latestProcessor = new LivenessCheckProcessor(resultSessionToken, SampleApp);
@@ -132,18 +132,18 @@ export var SampleApp = (function () {
 
     if (!latestProcessor.isSuccess()) {
       // Redefina o identificador de inscrição.
-      latestEnrollmentIdentifier = '';
+      latestEnrollmentIdentifier = "";
 
       // Mostrar mensagem de saída antecipada na tela. Se isso ocorrer, verifique os logs.
       SampleAppUtilities.displayStatus(
-        'A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes.'
+        "A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes."
       );
 
       return;
     }
 
     // Mostrar mensagem de sucesso na tela
-    SampleAppUtilities.displayStatus('Enviado com sucesso');
+    SampleAppUtilities.displayStatus("Enviado com sucesso");
   };
 
   const setLatestSessionResult = (sessionResult) => {

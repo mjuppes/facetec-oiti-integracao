@@ -1,23 +1,23 @@
-import React, { Fragment, useEffect, useState } from 'react';
-import { Col, Row } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import ImgIcon from '../assets/img/img-icon.png';
-import ChevronRight from '../assets/img/chevron-right.png';
-import CaptureArea from './capture-area';
-import axios from 'axios';
-import { FaceCaptcha } from '@oiti/facecaptcha-core';
+import React, { Fragment, useEffect, useState } from "react";
+import { Col, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import ImgIcon from "../assets/img/img-icon.png";
+import ChevronRight from "../assets/img/chevron-right.png";
+import CaptureArea from "./capture-area";
+import axios from "axios";
+import { FaceCaptcha } from "@oiti/facecaptcha-core";
 
 const SendDocuments = () => {
   const defaultState = {
-    appkey: window.localStorage.getItem('appkey'),
-    message: '', // trocar para ''
+    appkey: window.localStorage.getItem("appkey"),
+    message: "", // trocar para ''
     sendDocument: false, // trocar pra false
     isLoaded: false, // trocar pra false
     showUpload: false, // trocar pra false
     rotateCamera: false, // trocar pra false
     snapsCaptures: [], // trocar para []
-    streams: '', // trocar para ''
-    snapTempDOM: '', // trocar para ''
+    streams: "", // trocar para ''
+    snapTempDOM: "", // trocar para ''
     btnControllers: false, // trocar pra false
     showIniciar: false, // trocar pra false
     uploadRequest: false, // trocar pra false
@@ -33,11 +33,11 @@ const SendDocuments = () => {
 
   const handleStream = (stream) => {
     setTimeout(() => {
-      let video = document.getElementById('video');
+      let video = document.getElementById("video");
 
-      video.setAttribute('autoplay', '');
-      video.setAttribute('muted', '');
-      video.setAttribute('playsinline', '');
+      video.setAttribute("autoplay", "");
+      video.setAttribute("muted", "");
+      video.setAttribute("playsinline", "");
 
       video.srcObject = stream;
 
@@ -55,7 +55,7 @@ const SendDocuments = () => {
   const setTypeCapture = (type) => {
     setOwnState({
       ...ownState,
-      message: 'Carregando...',
+      message: "Carregando...",
       sendDocument: true,
       multiCapture: type === 1 ? false : true,
       showTypeCapture: false,
@@ -64,7 +64,7 @@ const SendDocuments = () => {
     setTimeout(() => {
       setOwnState({
         ...ownState,
-        message: '',
+        message: "",
         isLoaded: false,
       });
     });
@@ -82,7 +82,7 @@ const SendDocuments = () => {
         setOwnState({
           ...ownState,
           rotateCamera: false,
-          message: '',
+          message: "",
           isLoaded: false,
         });
 
@@ -93,7 +93,7 @@ const SendDocuments = () => {
         setOwnState({
           ...ownState,
           rotateCamera: true,
-          message: '',
+          message: "",
           isLoaded: false,
         });
       }
@@ -111,14 +111,14 @@ const SendDocuments = () => {
         setOwnState({
           ...ownState,
           rotateCamera: true,
-          message: '',
+          message: "",
           isLoaded: false,
         });
       } else {
         setOwnState({
           ...ownState,
           rotateCamera: false,
-          message: '',
+          message: "",
           isLoaded: false,
         });
 
@@ -130,7 +130,7 @@ const SendDocuments = () => {
       setOwnState({
         ...ownState,
         rotateCamera: false,
-        message: '',
+        message: "",
       });
 
       if (!ownState.btnControllers && !ownState.showUpload) {
@@ -174,22 +174,22 @@ const SendDocuments = () => {
         setOwnState({
           ...((ownState.message =
             ownState.indexTempSnap === 1
-              ? 'Centralize o verso do documento'
-              : 'Centralize a frente do documento'),
+              ? "Centralize o verso do documento"
+              : "Centralize a frente do documento"),
           (ownState.isLoaded = false)),
         });
       } else {
         setOwnState({
           ...((ownState.message =
             ownState.snapsCaptures.length === 0
-              ? 'Centralize a frente do documento'
-              : 'Centralize o verso do documento'),
+              ? "Centralize a frente do documento"
+              : "Centralize o verso do documento"),
           (ownState.isLoaded = false)),
         });
       }
     } else {
       setOwnState({
-        ...(ownState.message = 'Centralize o documento'),
+        ...(ownState.message = "Centralize o documento"),
       });
     }
 
@@ -205,7 +205,7 @@ const SendDocuments = () => {
         ...ownState,
         showIniciar: true,
         isLoaded: false,
-        message: '',
+        message: "",
         processing: false,
       });
     }, 300);
@@ -221,7 +221,7 @@ const SendDocuments = () => {
     const constraints = {
       audio: false,
       video: {
-        facingMode: 'environment',
+        facingMode: "environment",
         width: { exact: 640 },
         height: { exact: 480 },
       },
@@ -232,7 +232,7 @@ const SendDocuments = () => {
       constraints.video = {
         width: { exact: 1280 },
         height: { exact: 720 },
-        facingMode: 'environment',
+        facingMode: "environment",
       };
     }
 
@@ -240,7 +240,7 @@ const SendDocuments = () => {
       .getUserMedia(constraints)
       .then((stream) => handleStream(stream))
       .catch((err) => {
-        console.log('Sem câmera! ' + err);
+        console.log("Sem câmera! " + err);
       });
   };
 
@@ -268,7 +268,7 @@ const SendDocuments = () => {
     setOwnState({
       ...ownState,
       processing: true,
-      message: 'Processando...',
+      message: "Processando...",
       showIniciar: false,
       isLoaded: true,
     });
@@ -279,7 +279,7 @@ const SendDocuments = () => {
 
       setOwnState({
         ...ownState,
-        message: '',
+        message: "",
         btnControllers: true,
         isLoaded: false,
         processing: false,
@@ -291,7 +291,7 @@ const SendDocuments = () => {
   const resetSnap = () => {
     const resetControls = () => {
       return setOwnState({
-        ...((ownState.snapTempDOM = ''), (ownState.btnControllers = false)),
+        ...((ownState.snapTempDOM = ""), (ownState.btnControllers = false)),
       });
     };
 
@@ -356,9 +356,9 @@ const SendDocuments = () => {
 
   // captura imagem da câmera
   const snap = () => {
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('fc_canvas');
-    const ctx = canvas.getContext('2d');
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("fc_canvas");
+    const ctx = canvas.getContext("2d");
 
     let ratio = video.videoWidth / video.videoHeight;
     let widthReal = 0;
@@ -406,7 +406,7 @@ const SendDocuments = () => {
     );
 
     const img = new Image();
-    img.src = canvas.toDataURL('image/jpeg');
+    img.src = canvas.toDataURL("image/jpeg");
 
     return img.src;
   };
@@ -418,7 +418,7 @@ const SendDocuments = () => {
         setOwnState({
           ...((ownState.indexTempSnap = index),
           (ownState.showUpload = false),
-          (ownState.message = 'Carregando...'),
+          (ownState.message = "Carregando..."),
           (ownState.sendDocument = true),
           (ownState.showTypeCapture = false)),
         }),
@@ -428,7 +428,7 @@ const SendDocuments = () => {
 
     setTimeout(() => {
       setOwnState({
-        ...((ownState.message = ''), (ownState.isLoaded = false)),
+        ...((ownState.message = ""), (ownState.isLoaded = false)),
       });
     }, 300);
 
@@ -439,11 +439,11 @@ const SendDocuments = () => {
   // Envia as fotos e finaliza o upload de imagens
   const uploadPictures = async () => {
     const snapsSend = ownState.snapsCaptures.map((snap) =>
-      snap.replace('data:image/jpeg;base64,', '')
+      snap.replace("data:image/jpeg;base64,", "")
     );
 
     const facecaptchaService = new FaceCaptcha(axios, {
-      BaseURL: process.env.REACT_APP_BASE_URL,
+      BaseURL: "https://comercial.certiface.com.br",
       timeout: 20000,
     });
 
@@ -455,7 +455,7 @@ const SendDocuments = () => {
     try {
       const result = await facecaptchaService.sendDocument(parameters);
 
-      console.log('consolando', result);
+      console.log("consolando", result);
 
       setTimeout(() => {
         setOwnState({
@@ -465,9 +465,9 @@ const SendDocuments = () => {
         });
       }, 1000);
 
-      window.alert('Documento enviado com sucesso');
+      window.alert("Documento enviado com sucesso");
 
-      window.localStorage.removeItem('appkey');
+      window.localStorage.removeItem("appkey");
     } catch (error) {
       setTimeout(() => {
         setOwnState({
@@ -475,7 +475,7 @@ const SendDocuments = () => {
         });
 
         window.alert(
-          'Documento não localizado! Por favor reenvie o documento.'
+          "Documento não localizado! Por favor reenvie o documento."
         );
       }, 1000);
     }
@@ -483,7 +483,7 @@ const SendDocuments = () => {
 
   useEffect(() => {
     ownState.sendDocument && onResize();
-  }, [ownState.sendDocument]);
+  }, [onResize, ownState.sendDocument]);
 
   return (
     <Fragment>
@@ -504,7 +504,7 @@ const SendDocuments = () => {
             tabIndex={0}
           >
             <Row>
-              <Col xs={'auto'} className="d-flex align-items-center">
+              <Col xs={"auto"} className="d-flex align-items-center">
                 <img src={ImgIcon} alt="" aria-hidden="true" />
               </Col>
               <Col className="d-flex align-items-center">
@@ -513,7 +513,7 @@ const SendDocuments = () => {
                   <p className="m-0">Frente e verso</p>
                 </div>
               </Col>
-              <Col xs={'auto'} className="d-flex align-items-center">
+              <Col xs={"auto"} className="d-flex align-items-center">
                 <img src={ChevronRight} alt="" aria-hidden="true" />
               </Col>
             </Row>
@@ -528,7 +528,7 @@ const SendDocuments = () => {
             tabIndex={0}
           >
             <Row>
-              <Col xs={'auto'} className="d-flex align-items-center">
+              <Col xs={"auto"} className="d-flex align-items-center">
                 <img src={ImgIcon} alt="" aria-hidden="true" />
               </Col>
               <Col className="d-flex align-items-center">
@@ -537,7 +537,7 @@ const SendDocuments = () => {
                   <p className="m-0">1 frente e um verso</p>
                 </div>
               </Col>
-              <Col xs={'auto'} className="d-flex align-items-center">
+              <Col xs={"auto"} className="d-flex align-items-center">
                 <img src={ChevronRight} alt="" aria-hidden="true" />
               </Col>
             </Row>
