@@ -35,10 +35,11 @@ export var SampleApp = (function () {
 
   const loadAssets = () => {
     // Defina um caminho de diretório para outros recursos do FaceTec Browser SDK.
-    FaceTecSDK.setResourceDirectory("../core-sdk/FaceTecSDK.js/resources");
+    // FaceTecSDK.setResourceDirectory("../core-sdk/FaceTecSDK.js/resources");
+    FaceTecSDK.setResourceDirectory("/core-sdk/FaceTecSDK.js/resources");
 
     // Defina o caminho do diretório para as imagens necessárias do FaceTec Browser SDK.
-    FaceTecSDK.setImagesDirectory("../core-sdk/FaceTec_images");
+    FaceTecSDK.setImagesDirectory("./../../../../../core-sdk/FaceTec_images");
 
     // Defina as personalizações do FaceTec Device SDK.
     ThemeHelpers.setAppTheme(ThemeHelpers.getCurrentTheme());
@@ -75,6 +76,9 @@ export var SampleApp = (function () {
 
           // Set localization
           FaceTecSDK.configureLocalization(FaceTecStringsPtBr);
+
+
+          //onLivenessCheckPressed();
         }
         SampleAppUtilities.displayStatus(
           FaceTecSDK.getFriendlyDescriptionForFaceTecSDKStatus(
@@ -87,7 +91,40 @@ export var SampleApp = (function () {
     SampleAppUtilities.formatUIForDevice();
   };
 
+  
   const getProductionKey = async () => {
+
+
+    axios.get("https://app.factafinanceira.com.br/IntegracaoOiti/getAppKey").then(async (response) => {
+      
+      console.log(response);
+      console.log('TeSte');
+
+      console.log(response.data.appkey);
+
+      const facecaptchaService = new FaceCaptcha(axios, {
+        BaseURL: "https://comercial.certiface.com.br",
+      });
+  
+      const result = await facecaptchaService.getProductionKey({
+        appKey: response.data.appkey,
+      });
+  
+      resultProductKey = result.productionKey;
+
+
+      console.log(result);
+
+      loadAssets();
+
+  
+
+    })
+    .catch((error) => {
+      console.log(error)
+    });
+
+  /*
     const facecaptchaService = new FaceCaptcha(axios, {
       BaseURL: "https://comercial.certiface.com.br",
     });
@@ -98,7 +135,9 @@ export var SampleApp = (function () {
 
     resultProductKey = result.productionKey;
 
-    loadAssets();
+    */
+
+    //loadAssets();
   };
 
   const getSessionToken = async () => {
