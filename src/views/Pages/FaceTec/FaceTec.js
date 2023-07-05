@@ -15,29 +15,8 @@ class FaceTec extends Component {
   render() {
     return (
       <Container fluid className="p-0">
-        <Row>
-          <Col xs={12} className="px-0">
-            <Navbar bg="light">
-              <Container>
-                <Navbar.Brand href="/">
-                  <img alt="Logo Oiti" />
-                </Navbar.Brand>
-              </Container>
-            </Navbar>
-          </Col>
-        </Row>
         <Container>
           <Liveness3D />
-          {/* <Router basename={'/facetec'}>
-          <Switch>
-            <Route element={<Liveness2D />} path="/liveness-2d" />
-            <Route element={<Liveness3D />} path="/liveness-3d" />
-            <Route element={<SendDocuments />} path="/send-documents" />
-
-          <Route element={<Liveness3D />} path="/liveness-3d" />
-          <Route  path="/send-documents" />
-          </Switch>
-        </Router> */}
         </Container>
       </Container>
     );
@@ -45,3 +24,4 @@ class FaceTec extends Component {
 }
 
 export default FaceTec;
+  

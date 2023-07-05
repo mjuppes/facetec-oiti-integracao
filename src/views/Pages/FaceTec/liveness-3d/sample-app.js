@@ -6,6 +6,7 @@ import { LivenessCheckProcessor } from "../../../../../core/processor/LivenessCh
 import { Config } from "../Config";
 import { SampleAppUtilities } from "../../../../../core/utilities/SampleAppUtilities";
 import * as FaceTecStringsPtBr from "../../../../../core-sdk-optional/FaceTecStrings.pt-br";
+import * as PackageJson from "../../../../../package.json";
 
 export var SampleApp = (function () {
   let resultProductKey = "";
@@ -29,14 +30,16 @@ export var SampleApp = (function () {
     "8QIDAQAB\n" +
     "-----END PUBLIC KEY-----";
 
-  const staticAppKey = window.localStorage.getItem("appkey");
+  let staticAppKey = "";
 
   const staticUserAgent = FaceTecSDK.createFaceTecAPIUserAgentString("");
+
+  const defaultHomePage = new URL(PackageJson.default.homepage);
 
   const loadAssets = () => {
     // Defina um caminho de diretório para outros recursos do FaceTec Browser SDK.
     // FaceTecSDK.setResourceDirectory("../core-sdk/FaceTecSDK.js/resources");
-    FaceTecSDK.setResourceDirectory("/core-sdk/FaceTecSDK.js/resources");
+    FaceTecSDK.setResourceDirectory(`${defaultHomePage.pathname}core-sdk/FaceTecSDK.js/resources`);
 
     // Defina o caminho do diretório para as imagens necessárias do FaceTec Browser SDK.
     FaceTecSDK.setImagesDirectory("./../../../../../core-sdk/FaceTec_images");
@@ -78,7 +81,7 @@ export var SampleApp = (function () {
           FaceTecSDK.configureLocalization(FaceTecStringsPtBr);
 
 
-          //onLivenessCheckPressed();
+          onLivenessCheckPressed();
         }
         SampleAppUtilities.displayStatus(
           FaceTecSDK.getFriendlyDescriptionForFaceTecSDKStatus(
@@ -91,6 +94,38 @@ export var SampleApp = (function () {
     SampleAppUtilities.formatUIForDevice();
   };
 
+  const restartLiveness = () => {
+    // Inicialize o FaceTec Browser SDK e configure os recursos da interface do usuário.
+    FaceTecSDK.initializeInProductionMode(
+      resultProductKey,
+      deviceKeyIdentifier,
+      publicFaceScanEncryptionKey,
+      function (initializedSuccessfully) {
+        if (initializedSuccessfully) {
+          SampleAppUtilities.enableControlButtons();
+
+          //FaceTecSDK.configureLocalization({"localizationJSON": "br"});
+
+          // Set localization
+          FaceTecSDK.configureLocalization(FaceTecStringsPtBr);
+
+
+          onLivenessCheckPressed();
+        }
+        SampleAppUtilities.displayStatus(
+          FaceTecSDK.getFriendlyDescriptionForFaceTecSDKStatus(
+            FaceTecSDK.getStatus()
+          )
+        );
+      }
+    );
+
+    SampleAppUtilities.formatUIForDevice();
+
+    SampleAppUtilities.fadeOutMainUIAndPrepareForSession();
+
+    getSessionToken();
+  }
   
   const getProductionKey = async () => {
 
@@ -101,13 +136,15 @@ export var SampleApp = (function () {
       console.log('TeSte');
 
       console.log(response.data.appkey);
+      staticAppKey  = response.data.appkey;
 
       const facecaptchaService = new FaceCaptcha(axios, {
         BaseURL: "https://comercial.certiface.com.br",
+        timeout: 20000,
       });
   
       const result = await facecaptchaService.getProductionKey({
-        appKey: response.data.appkey,
+        appKey: staticAppKey,
       });
   
       resultProductKey = result.productionKey;
@@ -140,6 +177,20 @@ export var SampleApp = (function () {
     //loadAssets();
   };
 
+  const renewProductionKey = async () => {
+    const facecaptchaService = new FaceCaptcha(axios, {
+      BaseURL: "https://comercial.certiface.com.br",
+    });
+
+    const result = await facecaptchaService.getProductionKey({
+      appKey: staticAppKey,
+    });
+
+    resultProductKey = result.productionKey;
+
+    restartLiveness();
+  }
+
   const getSessionToken = async () => {
     const facecaptchaService = new FaceCaptcha(axios, {
       BaseURL: "https://comercial.certiface.com.br",
@@ -166,7 +217,7 @@ export var SampleApp = (function () {
     getSessionToken();
   };
 
-  const onComplete = () => {
+  const onComplete = async () => {
     SampleAppUtilities.showMainUI();
 
     if (!latestProcessor.isSuccess()) {
@@ -177,6 +228,11 @@ export var SampleApp = (function () {
       SampleAppUtilities.displayStatus(
         "A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes."
       );
+
+
+      await setTimeout(() => {
+        renewProductionKey();
+      },  2000);
 
       return;
     }

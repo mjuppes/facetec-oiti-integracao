@@ -52,9 +52,9 @@ export const ThemeHelpers = (function () {
       document.getElementById("loading-session-token-text").style.color =
         "rgb(64, 127, 178)";
     } else if (theme === "Oiti-Dark") {
-      const primaryColor = "#05D758"; // verde
-      const secondaryColor = "#FFFFFF"; // branco
-      const backgroundColor = "#1E1E1E"; // preto
+      const primaryColor = "#0384fc"; // verde
+      const secondaryColor = "#0384fc"; 
+      const backgroundColor = "#dff1f5"; 
       const font = "Futura,'Trebuchet MS',Arial,sans-serif";
 
       var successResultAnimationSVG = document.createElementNS(
@@ -82,7 +82,7 @@ export const ThemeHelpers = (function () {
       activityIndicatorSVG.setAttribute("viewBox", "0 0 100 100");
       activityIndicatorSVG.classList.add("oiti-activity-indicator-svg");
       activityIndicatorSVG.innerHTML =
-        "<path fill='#05D758' d='M42.3,39.6c5.7-4.3,13.9-3.1,18.1,2.7c4.3,5.7,3.1,13.9-2.7,18.1l4.1,5.5c8.8-6.5,10.6-19,4.1-27.7c-6.5-8.8-19-10.6-27.7-4.1L42.3,39.6z'><animateTransform attributeName='transform' attributeType='XML' type='rotate' dur='1s' from='0 50 50' to='360 50 50' repeatCount='indefinite' /></path>";
+        "<path fill='#0384fc' d='M42.3,39.6c5.7-4.3,13.9-3.1,18.1,2.7c4.3,5.7,3.1,13.9-2.7,18.1l4.1,5.5c8.8-6.5,10.6-19,4.1-27.7c-6.5-8.8-19-10.6-27.7-4.1L42.3,39.6z'><animateTransform attributeName='transform' attributeType='XML' type='rotate' dur='1s' from='0 50 50' to='360 50 50' repeatCount='indefinite' /></path>";
 
       var uploadActivityIndicatorSVG = document.createElementNS(
         "http://www.w3.org/2000/svg",
@@ -91,7 +91,7 @@ export const ThemeHelpers = (function () {
       uploadActivityIndicatorSVG.setAttribute("viewBox", "0 0 100 100");
       uploadActivityIndicatorSVG.classList.add("oiti-activity-indicator-svg");
       uploadActivityIndicatorSVG.innerHTML =
-        "<path fill='#05D758' d='M42.3,39.6c5.7-4.3,13.9-3.1,18.1,2.7c4.3,5.7,3.1,13.9-2.7,18.1l4.1,5.5c8.8-6.5,10.6-19,4.1-27.7c-6.5-8.8-19-10.6-27.7-4.1L42.3,39.6z'><animateTransform attributeName='transform' attributeType='XML' type='rotate' dur='1s' from='0 50 50' to='360 50 50' repeatCount='indefinite' /></path>";
+        "<path fill='#0384fc' d='M42.3,39.6c5.7-4.3,13.9-3.1,18.1,2.7c4.3,5.7,3.1,13.9-2.7,18.1l4.1,5.5c8.8-6.5,10.6-19,4.1-27.7c-6.5-8.8-19-10.6-27.7-4.1L42.3,39.6z'><animateTransform attributeName='transform' attributeType='XML' type='rotate' dur='1s' from='0 50 50' to='360 50 50' repeatCount='indefinite' /></path>";
 
       // Personalização da Animação de Carregamento Inicial
       currentCustomization.initialLoadingAnimationCustomization.customAnimation =
