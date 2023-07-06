@@ -86,7 +86,7 @@ export var SampleApp = (function () {
           // Set localization
           FaceTecSDK.configureLocalization(FaceTecStringsPtBr);
 
-          // onLivenessCheckPressed();
+          onLivenessCheckPressed();
         }
 
         SampleAppUtilities.displayStatus(
