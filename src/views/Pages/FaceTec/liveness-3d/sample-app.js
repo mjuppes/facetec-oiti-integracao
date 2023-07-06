@@ -62,9 +62,7 @@ export var SampleApp = (function () {
         }
 
         SampleAppUtilities.displayStatus(
-          FaceTecSDK.getFriendlyDescriptionForFaceTecSDKStatus(
-            FaceTecSDK.getStatus()
-          )
+          CustomFaceTecStatus.status[FaceTecSDK.getStatus()].message
         );
       },
       resultProductKey,
@@ -116,9 +114,7 @@ export var SampleApp = (function () {
           onLivenessCheckPressed();
         }
         SampleAppUtilities.displayStatus(
-          FaceTecSDK.getFriendlyDescriptionForFaceTecSDKStatus(
-            FaceTecSDK.getStatus()
-          )
+          CustomFaceTecStatus.status[FaceTecSDK.getStatus()].message
         );
       }
     );
@@ -128,44 +124,44 @@ export var SampleApp = (function () {
     SampleAppUtilities.fadeOutMainUIAndPrepareForSession();
 
     getSessionToken();
-  };
-
-  const getProductionKey = async () => {
-    await getNewAppKey().then(async (data) => {
-      console.log("Aqui teste");
-      console.log(data);
-      staticAppKey = data.data.appkey;
-
-      console.log(staticAppKey);
-
+  }
+  
+  const getProductionKey = async (nome, cpf, nascimento,idExternoCliente) => {
       const facecaptchaService = new FaceCaptcha(axios, {
         BaseURL: "https://comercial.certiface.com.br",
         timeout: 20000,
       });
 
-      try {
-        const result = await facecaptchaService.getProductionKey({
-          appKey: staticAppKey,
-        });
+     await getNewAppKey(nome, cpf, nascimento,idExternoCliente).then(async(data) => {
+        staticAppKey = data.data.appkey;
+      
 
-        resultProductKey = result.productionKey;
+        try {
+          const result = await facecaptchaService.getProductionKey({
+            appKey: staticAppKey,
+          });
+      
+          resultProductKey = result.productionKey;
+          console.log(result);
+      
+          loadAssets();
 
-        console.log(result);
+        } catch (error) {
+          errorCallback('FATALERROR', 'Por favor consultar o administrador do sistema');
+        }
+      });
+    }
 
-        loadAssets();
-      } catch (error) {
-        errorCallback(
-          "FATALERROR",
-          "Por favor consultar o administrador do sistema"
-        );
-      }
-    });
-  };
+  const getNewAppKey = async (nome, cpf, nascimento,idExternoCliente) => {
 
-  const getNewAppKey = async () => {
-    const result = await axios.get(
-      "https://app.factafinanceira.com.br/IntegracaoOiti/getAppKey"
-    );
+    const FormData = require('form-data');
+    const formData = new FormData();
+    formData.append('nome', nome);
+    formData.append('cpf', cpf);
+    formData.append('nascimento', nascimento);
+    formData.append('idExternoCliente', idExternoCliente);
+
+    const result = await axios.post("https://app.factafinanceira.com.br/IntegracaoOiti/getAppKey", formData);
 
     console.log(result);
 
@@ -179,7 +175,7 @@ export var SampleApp = (function () {
     return result;
   };
 
-  const renewProductionKey = async () => {
+  const renewProductionKey = async (nome, cpf, nascimento,idExternoCliente) => {
     const facecaptchaService = new FaceCaptcha(axios, {
       BaseURL: "https://comercial.certiface.com.br",
     });
@@ -192,18 +188,23 @@ export var SampleApp = (function () {
       });
       console.log("teste aqui agora: ", result);
     } catch (error) {
-      try {
-        staticAppKey = await getNewAppKey().data.appkey;
-        result = await facecaptchaService.getProductionKey({
-          appKey: staticAppKey,
-        });
-      } catch (error) {
-        errorCallback(
-          "FATALERROR",
-          "RENEW Por favor consultar o administrador do sistema"
-        );
-        return;
-      }
+
+      
+      await getNewAppKey(nome, cpf, nascimento,idExternoCliente).then(async(data) => { 
+        staticAppKey = data.data.appkey;
+
+        try {
+        
+          result = await facecaptchaService.getProductionKey({
+            appKey: staticAppKey,
+          });
+        } catch (error) {
+          errorCallback('FATALERROR', 'RENEW Por favor consultar o administrador do sistema');
+          return
+        }
+
+      })
+      
     }
 
     resultProductKey = result.productionKey;
@@ -246,10 +247,8 @@ export var SampleApp = (function () {
         "A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes."
       );*/
 
-      errorCallback(
-        "NOTCONFIRMED",
-        "A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes."
-      );
+
+      errorCallback("NOTCONFIRMED", "A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes  teste.")
 
       return;
     }

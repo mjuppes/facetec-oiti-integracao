@@ -20,26 +20,18 @@ class FaceTecApiOiti extends Component {
         loadSpinner: false,
         tipoDocumento: '',
         showCamera: true,
-        errorUnico: false
+        errorUnico: false,
+        keyComponente : 0
       };
   
     }
 
 
-    getImagemOiti = (imagem) => {
-      this.setState({ imagem : 'data:image/jpeg;base64,' + imagem.base64, encrypted : imagem.encrypted}); //retirar comentario
-      //this.handleCredencial();
+    getImagemOiti = (imagem, success) => {
+      this.setState({ imagem : 'data:image/jpeg;base64,' + imagem, sucessOiti : success, showCamera : false}); //retirar comentario
     }
 
 
-    /*render() {
-
-        return (
-          <div>
-            <FaceTec />
-          </div>            
-        );
-    }*/
 
 
     render() {
@@ -76,35 +68,19 @@ class FaceTecApiOiti extends Component {
                 {(this.state.showCamera  ===  true) &&
                   <div style={containerStyle}>
                       <Liveness3D 
+                        nome ={this.props.nome}
+                        cpf  = {this.props.cpf}
+                        nascimento = {this.props.nascimento}
+                        idExternoCliente = {this.props.codigoAF}
                         getImagemOiti = {this.getImagemOiti}
+                        showMessageErrorOiti = {this.showMessageErrorOiti}
+                        key = {this.state.keyComponente}
                       />
                   </div>
                 }
 
-                {(this.state.errorUnico === true) &&
-                  <Col xs="12">
-                    <Modal isOpen={this.state.modalDados} toggle={this.modalDados} className='modal-primary modal-dialog-centered' style={{'zIndex' : 9999}}>
-                        <ModalHeader toggle={this.toggleMdlDados} onClick={this.props.onClick}>Atenção</ModalHeader>
-                        <ModalBody>
-                          <Row className="mt-1">
-                            <Col md="2" lg="2" xl="2" xs="2" sm="2" className="d-flex justify-content-center">
-                              <i className="fa fa-times-circle-o align-self-center h2"></i>
-                            </Col>
-                            <Col md="10" lg="10" xl="10" xs="10" sm="10" className="text-left pl-0">
-                              <p className="align-self-center">{this.state.msgErroUnico}!!</p>
-                            </Col>
-                          </Row>
-                          <Row className="mt-1">
-                            <Col md="12" lg="12" xl="12" xs="12" sm="12" className="text-center">
-                              <Button color="success" onClick={this.props.onClick}>Ok</Button>
-                            </Col>
-                          </Row>
-                        </ModalBody>
-                      </Modal>
-                  </Col>
-                }
 
-                {(this.state.errorProcessoUnico  === true) &&
+                {(this.state.errorProcessoOiti  === true) &&
                       <Card className="border-white shadow" style={{borderRadius: '8px'}}>
                         <CardBody>
                           <Row className="mt-3">
@@ -126,7 +102,7 @@ class FaceTecApiOiti extends Component {
                       </Card>
                     }
 
-                    {(this.state.sucessUnico == true) &&
+                    {(this.state.sucessOiti === true) &&
                       <Card className="border-white shadow" style={{borderRadius: '8px'}}>
                         <CardBody>
                           <Row className="mt-3">
@@ -138,7 +114,7 @@ class FaceTecApiOiti extends Component {
                             </Col>
                             <Col className="text-center" md="12" lg="12" xs="12" sm="12">
                                 <Link className="btn btn-outline-primary btn-block btn-lg font-weight-bold mt-2"
-                                  onClick={() => this.props.getStateSelfie(this.state.access_token, this.state.id_unico, this.state.imagem, this.state.id_tabela_unico)}
+                                  onClick={() => this.props.getStateSelfieOiti(this.state.imagem)}
                                   to="#">
                                   Ir para próxima etapa
                                 </Link>

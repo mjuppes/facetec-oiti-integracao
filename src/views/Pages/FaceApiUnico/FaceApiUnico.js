@@ -165,7 +165,8 @@ class FaceApiUnico extends Component {
         showModalExtrato: false,
         isComplementar : false,
         id_inclusao : false,
-        isOiti : true
+        isOiti : true,
+        processouOiti : false
       };
 
       if (this.props.location.state === undefined || this.props.location.state === '') {
@@ -342,6 +343,16 @@ class FaceApiUnico extends Component {
         this.state.imagemSelfieOITI = imagemSelfie;
         this.state.id_tabela_unico = id_tabela_unico;
     }
+
+    getStateSelfieOiti = (imagemSelfie) => {
+      this.state.tirarSelfie = true;
+      this.state.documentosUnico = true;
+      this.state.processouOiti = true;
+      this.state.imagemSelfie = imagemSelfie;
+      this.state.imagemSelfieOITI = imagemSelfie;
+  }
+
+
 
     getTipoDocumento = (tipoDocumento) => {
 		    if (tipoDocumento === 'ANALFABETO') { //Se for analfabeto vai retornar para etapaDocumento para selecionar identidade ou CNH da testemunha
@@ -2064,9 +2075,20 @@ class FaceApiUnico extends Component {
                                     </Col>
                                 }
 
-                                {(this.state.tirarSelfie === true && this.state.isOiti === true) && /* SELFIE */
+                                {(this.state.tirarSelfie === true && this.state.isOiti === true && this.state.processouOiti === false) && /* SELFIE */
                                   <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
-                                    <FaceTecApiOiti />
+                                    <FaceTecApiOiti 
+                                      codigoAF = {atob(this.state.codigoAFOriginal)}
+                                      nome = {this.state.nome}
+                                      cpf = {this.state.cpf}
+                                      isRepresentanteLegal = {this.state.isRepresentanteLegal}
+                                      nomeRepresentanteLegal = {this.state.obj_proposta.NOME_REPRESENTANTE}
+                                      cpfRepresentanteLegal = {this.state.obj_proposta.CPF_REPRESENTANTE}
+                                      nascimento = {this.state.nascimento}
+                                      key = {this.state.keyComponente}
+                                      onClick = {this.reloadComponente.bind(this)}
+                                      getStateSelfieOiti = {this.getStateSelfieOiti}
+                                    />
                                   </Col>
                                 }
 
