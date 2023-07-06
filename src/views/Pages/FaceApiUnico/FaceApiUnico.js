@@ -13,10 +13,6 @@ import CardAnalfabeto from '../EnvioDocAnalfabeto/CardAnalfabeto';
 import EnvioDocumentoUnicoCTPS from '../EnvioDocumentoUnicoCTPS/EnvioDocumentoUnicoCTPS';
 import EnvioDocUnicoIdentidade from '../EnvioDocUnicoIdentidade/EnvioDocUnicoIdentidade';
 import EnvioDocumentoEstrangeiro from '../EnvioDocumentoEstrangeiro/EnvioDocumentoEstrangeiro';
-/*FaceTecApiOiti
-2065
-const FaceTecApiOiti = React.lazy(() => import('./views/Pages/FaceTecApiOiti/FaceTecApiOiti'));
-*/
 
 import FaceTecApiOiti from '../FaceTecApiOiti/FaceTecApiOiti'
 import EnvioAudioUnico from '../EnvioAudioUnico/EnvioAudioUnico';
@@ -168,7 +164,8 @@ class FaceApiUnico extends Component {
         imagemExtrato : [],
         showModalExtrato: false,
         isComplementar : false,
-        id_inclusao : false
+        id_inclusao : false,
+        isOiti : true
       };
 
       if (this.props.location.state === undefined || this.props.location.state === '') {
@@ -2067,9 +2064,31 @@ class FaceApiUnico extends Component {
                                     </Col>
                                 }
 
-                                {(this.state.tirarSelfie === true) && /* SELFIE */
+                                {(this.state.tirarSelfie === true && this.state.isOiti === true) && /* SELFIE */
                                   <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
                                     <FaceTecApiOiti />
+                                  </Col>
+                                }
+
+
+                                {(this.state.tirarSelfie === true && this.state.isOiti === false) && /* SELFIE */
+                                  <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
+                                      <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
+                                       <EnvioSelfieUnico
+                                          voltarInicioUnicoSelfie = {this.voltarInicioUnicoSelfie}
+                                          tentativaUnico = {this.state.tentativaUnico}
+                                          codigoAF = {atob(this.state.codigoAFOriginal)}
+                                          nome = {this.state.nome}
+                                          cpf = {this.state.cpf}
+                                          isRepresentanteLegal = {this.state.isRepresentanteLegal}
+                                          nomeRepresentanteLegal = {this.state.obj_proposta.NOME_REPRESENTANTE}
+                                          cpfRepresentanteLegal = {this.state.obj_proposta.CPF_REPRESENTANTE}
+                                          nascimento = {this.state.nascimento}
+                                          key = {this.state.keyComponente}
+                                          onClick = {this.reloadComponente.bind(this)}
+                                          getStateSelfie = {this.getStateSelfie}
+                                        />
+                                    </Col>
                                   </Col>
                                 }
 

@@ -32,6 +32,9 @@ export var SampleApp = (function () {
 
   let staticAppKey = "";
 
+  let successCallback, errorCallback = () => ({});
+
+
   const staticUserAgent = FaceTecSDK.createFaceTecAPIUserAgentString("");
 
   const defaultHomePage = new URL(PackageJson.default.homepage);
@@ -129,37 +132,39 @@ export var SampleApp = (function () {
   
   const getProductionKey = async () => {
 
+     await getNewAppKey().then(async(data) => {
 
-    axios.get("https://app.factafinanceira.com.br/IntegracaoOiti/getAppKey").then(async (response) => {
-      
-      console.log(response);
-      console.log('TeSte');
+      console.log('Aqui teste');
+    console.log(data);
+    staticAppKey = data.data.appkey;
+    
+    console.log(staticAppKey);
 
-      console.log(response.data.appkey);
-      staticAppKey  = response.data.appkey;
-
-      const facecaptchaService = new FaceCaptcha(axios, {
-        BaseURL: "https://comercial.certiface.com.br",
-        timeout: 20000,
-      });
-  
-      const result = await facecaptchaService.getProductionKey({
-        appKey: staticAppKey,
-      });
-  
-      resultProductKey = result.productionKey;
-
-
-      console.log(result);
-
-      loadAssets();
-
-  
-
-    })
-    .catch((error) => {
-      console.log(error)
+    const facecaptchaService = new FaceCaptcha(axios, {
+      BaseURL: "https://comercial.certiface.com.br",
+      timeout: 20000,
     });
+
+        try {
+          const result = await facecaptchaService.getProductionKey({
+            appKey: staticAppKey,
+          });
+      
+          resultProductKey = result.productionKey;
+      
+      
+          console.log(result);
+      
+          loadAssets();
+
+        } catch (error) {
+          errorCallback('FATALERROR', 'Por favor consultar o administrador do sistema');
+        }
+    
+
+     })
+    
+    
 
   /*
     const facecaptchaService = new FaceCaptcha(axios, {
@@ -177,17 +182,47 @@ export var SampleApp = (function () {
     //loadAssets();
   };
 
+  const getNewAppKey = async () => {
+
+    const result = await axios.get("https://app.factafinanceira.com.br/IntegracaoOiti/getAppKey");
+
+    console.log(result);
+
+    if(result.status !== 200) {
+      errorCallback('FATALERROR', 'Por favor consultar o administrador do sistema');
+    }
+
+    return result;
+
+  }
+
   const renewProductionKey = async () => {
     const facecaptchaService = new FaceCaptcha(axios, {
       BaseURL: "https://comercial.certiface.com.br",
     });
 
-    const result = await facecaptchaService.getProductionKey({
-      appKey: staticAppKey,
-    });
+    let result = {}
+
+    try {
+      result = await facecaptchaService.getProductionKey({
+        appKey: staticAppKey,
+      });
+        console.log('teste aqui agora: ', result)
+
+    } catch (error) {
+
+      try {
+        staticAppKey = await getNewAppKey().data.appkey;
+        result = await facecaptchaService.getProductionKey({
+          appKey: staticAppKey,
+        });
+      } catch (error) {
+        errorCallback('FATALERROR', 'RENEW Por favor consultar o administrador do sistema');
+        return
+      }
+    }
 
     resultProductKey = result.productionKey;
-
     restartLiveness();
   }
 
@@ -204,8 +239,6 @@ export var SampleApp = (function () {
 
     resultSessionToken = result.sessionToken;
 
-    window.localStorage.setItem("hasLiveness", "true");
-
     // Obtenha um token de sessão do FaceTec SDK e inicie o 3D Liveness Check.
     latestProcessor = new LivenessCheckProcessor(resultSessionToken, SampleApp);
   };
@@ -217,7 +250,7 @@ export var SampleApp = (function () {
     getSessionToken();
   };
 
-  const onComplete = async () => {
+  const onComplete = async() => {
     SampleAppUtilities.showMainUI();
 
     if (!latestProcessor.isSuccess()) {
@@ -225,20 +258,19 @@ export var SampleApp = (function () {
       latestEnrollmentIdentifier = "";
 
       // Mostrar mensagem de saída antecipada na tela. Se isso ocorrer, verifique os logs.
-      SampleAppUtilities.displayStatus(
+      /*SampleAppUtilities.displayStatus(
         "A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes."
-      );
+      );*/
 
 
-      await setTimeout(() => {
-        renewProductionKey();
-      },  2000);
+      errorCallback("NOTCONFIRMED", "A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes.")
 
       return;
     }
 
     // Mostrar mensagem de sucesso na tela
     SampleAppUtilities.displayStatus("Enviado com sucesso");
+    successCallback(staticAppKey)
   };
 
   const setLatestSessionResult = (sessionResult) => {
@@ -259,6 +291,11 @@ export var SampleApp = (function () {
     return staticAppKey;
   };
 
+  const settCallback = (success, error) => {
+    successCallback = success;
+    errorCallback = error;
+  };
+
   return {
     status,
     getProductionKey,
@@ -269,5 +306,7 @@ export var SampleApp = (function () {
     getLatestEnrollmentIdentifier,
     setLatestServerResult,
     getAppKey,
+    settCallback,
+    renewProductionKey,
   };
 })();
