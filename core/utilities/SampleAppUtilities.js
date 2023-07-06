@@ -1,19 +1,19 @@
-import { UI } from './UIFunctions';
+import { UI } from "./UIFunctions";
 
 export const SampleAppUtilities = (function () {
   function displayStatus(message) {
-    document.getElementById('status').innerHTML = message;
+    document.getElementById("status").innerHTML = message;
   }
 
   function fadeInMainUIContainer() {
-    UI('.wrapping-box-container').fadeIn(800);
+    UI(".wrapping-box-container").fadeIn(800);
   }
 
   function fadeInMainUIControls(callback) {
     if (isLikelyMobileDevice()) {
-      UI('#custom-logo-container').fadeIn(800);
+      UI("#custom-logo-container").fadeIn(800);
     }
-    UI('#controls').fadeIn(800, () => {
+    UI("#controls").fadeIn(800, () => {
       enableControlButtons();
       if (callback) {
         callback();
@@ -25,21 +25,21 @@ export const SampleAppUtilities = (function () {
   function fadeOutMainUIAndPrepareForSession() {
     disableControlButtons();
     if (isLikelyMobileDevice()) {
-      UI('#custom-logo-container').fadeOut(800);
+      UI("#custom-logo-container").fadeOut(800);
     }
-    UI('#controls').fadeOut(800);
-    UI('.wrapping-box-container').fadeOut(800);
+    UI("#controls").fadeOut(800);
+    UI(".wrapping-box-container").fadeOut(800);
   }
 
   function disableControlButtons() {
-    document.querySelectorAll('#controls > button').forEach(function (button) {
-      button.setAttribute('disabled', 'true');
+    document.querySelectorAll("#controls > button").forEach(function (button) {
+      button.setAttribute("disabled", "true");
     });
   }
 
   function enableControlButtons() {
-    document.querySelectorAll('#controls > button').forEach(function (button) {
-      button.removeAttribute('disabled');
+    document.querySelectorAll("#controls > button").forEach(function (button) {
+      button.removeAttribute("disabled");
     });
   }
 
@@ -51,7 +51,7 @@ export const SampleAppUtilities = (function () {
   function handleErrorGettingServerSessionToken() {
     showMainUI();
     displayStatus(
-      'Session could not be started due to an unexpected issue during the network request.'
+      "A sessão não pôde ser iniciada devido a um problema inesperado durante a solicitação de rede."
     );
   }
 
@@ -69,61 +69,61 @@ export const SampleAppUtilities = (function () {
     if (isLikelyMobileDevice()) {
       // Adjust button sizing
       document
-        .querySelectorAll('#controls > button')
+        .querySelectorAll("#controls > button")
         .forEach(function (element) {
-          if (element.className === 'big-button') {
-            element.style.height = '40px';
-            element.style.fontSize = '18px';
-          } else if (element.className === 'medium-button') {
-            element.style.height = '30px';
-            element.style.fontSize = '14px';
+          if (element.className === "big-button") {
+            element.style.height = "40px";
+            element.style.fontSize = "18px";
+          } else if (element.className === "medium-button") {
+            element.style.height = "30px";
+            element.style.fontSize = "14px";
           }
 
-          element.style.width = '220px';
+          element.style.width = "220px";
         });
       // Hide border around control panel and adjust height
-      document.getElementById('controls').style.height = 'auto';
-      document.getElementById('controls').style.borderColor = 'transparent';
+      document.getElementById("controls").style.height = "auto";
+      document.getElementById("controls").style.borderColor = "transparent";
       // Hide status label text background and decrease label font size
-      document.getElementById('status').style.backgroundColor = 'transparent';
-      document.getElementById('status').style.fontSize = '12px';
-      document.getElementById('status').style.position = 'inherit';
-      document.getElementById('status').style.width = '90%';
-      document.getElementById('status').style.margin = '20px auto 0';
-      document.getElementById('status').style.left = 'unset';
-      document.getElementById('status').style.bottom = 'unset';
+      document.getElementById("status").style.backgroundColor = "transparent";
+      document.getElementById("status").style.fontSize = "12px";
+      document.getElementById("status").style.position = "inherit";
+      document.getElementById("status").style.width = "90%";
+      document.getElementById("status").style.margin = "20px auto 0";
+      document.getElementById("status").style.left = "unset";
+      document.getElementById("status").style.bottom = "unset";
       // Move logo above buttons
       document
-        .getElementById('custom-logo-container')
+        .getElementById("custom-logo-container")
         .parentNode.insertBefore(
-          document.getElementById('custom-logo-container'),
-          document.getElementById('custom-logo-container').parentNode.firstChild
+          document.getElementById("custom-logo-container"),
+          document.getElementById("custom-logo-container").parentNode.firstChild
         );
-      document.getElementById('custom-logo-container').style.margin =
-        '0px 0px 20px 0px';
-      document.querySelector('#custom-logo-container img').style.height =
-        '40px';
+      document.getElementById("custom-logo-container").style.margin =
+        "0px 0px 20px 0px";
+      document.querySelector("#custom-logo-container img").style.height =
+        "40px";
       // Center control interface on screen
-      document.getElementsByClassName('wrapping-box-container')[0].style.top =
-        '50%';
-      document.getElementsByClassName('wrapping-box-container')[0].style.left =
-        '50%';
+      document.getElementsByClassName("wrapping-box-container")[0].style.top =
+        "50%";
+      document.getElementsByClassName("wrapping-box-container")[0].style.left =
+        "50%";
       document.getElementsByClassName(
-        'wrapping-box-container'
-      )[0].style.transform = 'translate(-50%, -50%)';
+        "wrapping-box-container"
+      )[0].style.transform = "translate(-50%, -50%)";
     }
   }
 
   function isLikelyMobileDevice() {
     let isMobileDeviceUA =
       !!/Android|iPhone|iPad|iPod|IEMobile|Mobile|mobile/i.test(
-        navigator.userAgent || ''
+        navigator.userAgent || ""
       );
     // ChromeOS/Chromebook detection.
     if (
       isMobileDeviceUA &&
-      (navigator.userAgent.indexOf('CrOS') !== -1 ||
-        navigator.userAgent.indexOf('Chromebook') !== -1)
+      (navigator.userAgent.indexOf("CrOS") !== -1 ||
+        navigator.userAgent.indexOf("Chromebook") !== -1)
     ) {
       isMobileDeviceUA = false;
     }

@@ -53,8 +53,8 @@ export const ThemeHelpers = (function () {
         "rgb(64, 127, 178)";
     } else if (theme === "Oiti-Dark") {
       const primaryColor = "#0384fc"; // verde
-      const secondaryColor = "#0384fc"; 
-      const backgroundColor = "#dff1f5"; 
+      const secondaryColor = "#0384fc";
+      const backgroundColor = "#dff1f5";
       const font = "Futura,'Trebuchet MS',Arial,sans-serif";
 
       var successResultAnimationSVG = document.createElementNS(
@@ -2755,7 +2755,7 @@ export const ThemeHelpers = (function () {
     currentTheme = themes[currentThemeIndex];
     setAppTheme(currentTheme);
     updateThemeTransitionView();
-    SampleAppUtilities.displayStatus("Theme set to: " + currentTheme);
+    SampleAppUtilities.displayStatus("Tema definido para: " + currentTheme);
   }
 
   function updateThemeTransitionView() {

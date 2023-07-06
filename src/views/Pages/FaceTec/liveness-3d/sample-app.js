@@ -7,6 +7,7 @@ import { Config } from "../Config";
 import { SampleAppUtilities } from "../../../../../core/utilities/SampleAppUtilities";
 import * as FaceTecStringsPtBr from "../../../../../core-sdk-optional/FaceTecStrings.pt-br";
 import * as PackageJson from "../../../../../package.json";
+import { CustomFaceTecStatus } from "./custom-facetec-status";
 
 export var SampleApp = (function () {
   let resultProductKey = "";
@@ -32,8 +33,8 @@ export var SampleApp = (function () {
 
   let staticAppKey = "";
 
-  let successCallback, errorCallback = () => ({});
-
+  let successCallback,
+    errorCallback = () => ({});
 
   const staticUserAgent = FaceTecSDK.createFaceTecAPIUserAgentString("");
 
@@ -42,7 +43,9 @@ export var SampleApp = (function () {
   const loadAssets = () => {
     // Defina um caminho de diretório para outros recursos do FaceTec Browser SDK.
     // FaceTecSDK.setResourceDirectory("../core-sdk/FaceTecSDK.js/resources");
-    FaceTecSDK.setResourceDirectory(`${defaultHomePage.pathname}core-sdk/FaceTecSDK.js/resources`);
+    FaceTecSDK.setResourceDirectory(
+      `${defaultHomePage.pathname}core-sdk/FaceTecSDK.js/resources`
+    );
 
     // Defina o caminho do diretório para as imagens necessárias do FaceTec Browser SDK.
     FaceTecSDK.setImagesDirectory("./../../../../../core-sdk/FaceTec_images");
@@ -83,13 +86,11 @@ export var SampleApp = (function () {
           // Set localization
           FaceTecSDK.configureLocalization(FaceTecStringsPtBr);
 
-
-          onLivenessCheckPressed();
+          // onLivenessCheckPressed();
         }
+
         SampleAppUtilities.displayStatus(
-          FaceTecSDK.getFriendlyDescriptionForFaceTecSDKStatus(
-            FaceTecSDK.getStatus()
-          )
+          CustomFaceTecStatus.status[FaceTecSDK.getStatus()].message
         );
       }
     );
@@ -112,7 +113,6 @@ export var SampleApp = (function () {
           // Set localization
           FaceTecSDK.configureLocalization(FaceTecStringsPtBr);
 
-
           onLivenessCheckPressed();
         }
         SampleAppUtilities.displayStatus(
@@ -128,103 +128,87 @@ export var SampleApp = (function () {
     SampleAppUtilities.fadeOutMainUIAndPrepareForSession();
 
     getSessionToken();
-  }
-  
+  };
+
   const getProductionKey = async () => {
+    await getNewAppKey().then(async (data) => {
+      console.log("Aqui teste");
+      console.log(data);
+      staticAppKey = data.data.appkey;
 
-     await getNewAppKey().then(async(data) => {
+      console.log(staticAppKey);
 
-      console.log('Aqui teste');
-    console.log(data);
-    staticAppKey = data.data.appkey;
-    
-    console.log(staticAppKey);
+      const facecaptchaService = new FaceCaptcha(axios, {
+        BaseURL: "https://comercial.certiface.com.br",
+        timeout: 20000,
+      });
 
-    const facecaptchaService = new FaceCaptcha(axios, {
-      BaseURL: "https://comercial.certiface.com.br",
-      timeout: 20000,
+      try {
+        const result = await facecaptchaService.getProductionKey({
+          appKey: staticAppKey,
+        });
+
+        resultProductKey = result.productionKey;
+
+        console.log(result);
+
+        loadAssets();
+      } catch (error) {
+        errorCallback(
+          "FATALERROR",
+          "Por favor consultar o administrador do sistema"
+        );
+      }
     });
-
-        try {
-          const result = await facecaptchaService.getProductionKey({
-            appKey: staticAppKey,
-          });
-      
-          resultProductKey = result.productionKey;
-      
-      
-          console.log(result);
-      
-          loadAssets();
-
-        } catch (error) {
-          errorCallback('FATALERROR', 'Por favor consultar o administrador do sistema');
-        }
-    
-
-     })
-    
-    
-
-  /*
-    const facecaptchaService = new FaceCaptcha(axios, {
-      BaseURL: "https://comercial.certiface.com.br",
-    });
-
-    const result = await facecaptchaService.getProductionKey({
-      appKey: staticAppKey,
-    });
-
-    resultProductKey = result.productionKey;
-
-    */
-
-    //loadAssets();
   };
 
   const getNewAppKey = async () => {
-
-    const result = await axios.get("https://app.factafinanceira.com.br/IntegracaoOiti/getAppKey");
+    const result = await axios.get(
+      "https://app.factafinanceira.com.br/IntegracaoOiti/getAppKey"
+    );
 
     console.log(result);
 
-    if(result.status !== 200) {
-      errorCallback('FATALERROR', 'Por favor consultar o administrador do sistema');
+    if (result.status !== 200) {
+      errorCallback(
+        "FATALERROR",
+        "Por favor consultar o administrador do sistema"
+      );
     }
 
     return result;
-
-  }
+  };
 
   const renewProductionKey = async () => {
     const facecaptchaService = new FaceCaptcha(axios, {
       BaseURL: "https://comercial.certiface.com.br",
     });
 
-    let result = {}
+    let result = {};
 
     try {
       result = await facecaptchaService.getProductionKey({
         appKey: staticAppKey,
       });
-        console.log('teste aqui agora: ', result)
-
+      console.log("teste aqui agora: ", result);
     } catch (error) {
-
       try {
         staticAppKey = await getNewAppKey().data.appkey;
         result = await facecaptchaService.getProductionKey({
           appKey: staticAppKey,
         });
       } catch (error) {
-        errorCallback('FATALERROR', 'RENEW Por favor consultar o administrador do sistema');
-        return
+        errorCallback(
+          "FATALERROR",
+          "RENEW Por favor consultar o administrador do sistema"
+        );
+        return;
       }
     }
 
     resultProductKey = result.productionKey;
     restartLiveness();
-  }
+  };
 
   const getSessionToken = async () => {
     const facecaptchaService = new FaceCaptcha(axios, {
@@ -250,7 +234,7 @@ export var SampleApp = (function () {
     getSessionToken();
   };
 
-  const onComplete = async() => {
+  const onComplete = async () => {
     SampleAppUtilities.showMainUI();
 
     if (!latestProcessor.isSuccess()) {
@@ -262,15 +246,17 @@ export var SampleApp = (function () {
         "A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes."
       );*/
 
-
-      errorCallback("NOTCONFIRMED", "A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes.")
+      errorCallback(
+        "NOTCONFIRMED",
+        "A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes."
+      );
 
       return;
     }
 
     // Mostrar mensagem de sucesso na tela
     SampleAppUtilities.displayStatus("Enviado com sucesso");
-    successCallback(staticAppKey)
+    successCallback(staticAppKey);
   };
 
   const setLatestSessionResult = (sessionResult) => {
