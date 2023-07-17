@@ -1,44 +1,54 @@
-import { FaceCaptcha } from '@oiti/facecaptcha-core';
-import axios from 'axios';
-import { FaceTecSDK } from '../core/core-sdk/FaceTecSDK.js/FaceTecSDK';
-import { ThemeHelpers } from '../core/utilities/ThemeHelpers';
-import { LivenessCheckProcessor } from '../core/processor/LivenessCheckProcessor';
-import { Config } from '../Config';
-import { SampleAppUtilities } from '../core/utilities/SampleAppUtilities';
-import * as FaceTecStringsPtBr from '../core-sdk-optional/FaceTecStrings.pt-br';
+import { FaceCaptcha } from "@oiti/facecaptcha-core";
+import axios from "axios";
+import { FaceTecSDK } from "../../../../../core/core-sdk/FaceTecSDK.js/FaceTecSDK";
+import { ThemeHelpers } from "../../../../../core/utilities/ThemeHelpers";
+import { LivenessCheckProcessor } from "../../../../../core/processor/LivenessCheckProcessor";
+import { Config } from "../Config";
+import { SampleAppUtilities } from "../../../../../core/utilities/SampleAppUtilities";
+import * as FaceTecStringsPtBr from "../../../../../core-sdk-optional/FaceTecStrings.pt-br";
+import * as PackageJson from "../../../../../package.json";
+import { CustomFaceTecStatus } from "./custom-facetec-status";
 
 export var SampleApp = (function () {
-  let resultProductKey = '';
-  let resultSessionToken = '';
+  let resultProductKey = "";
+  let resultSessionToken = "";
 
-  let latestEnrollmentIdentifier = '';
+  let latestEnrollmentIdentifier = "";
   let latestSessionResult = null;
   let latestIDScanResult = null;
   let latestProcessor;
 
-  const status = 'Inicializando...';
-  const deviceKeyIdentifier = 'dF2CabwQ6OCLFJaV2QqZhP7OUErHv0uz';
+  const status = "Inicializando...";
+  const deviceKeyIdentifier = "dF2CabwQ6OCLFJaV2QqZhP7OUErHv0uz";
   const publicFaceScanEncryptionKey =
-    '-----BEGIN PUBLIC KEY-----\n' +
-    'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5PxZ3DLj+zP6T6HFgzzk\n' +
-    'M77LdzP3fojBoLasw7EfzvLMnJNUlyRb5m8e5QyyJxI+wRjsALHvFgLzGwxM8ehz\n' +
-    'DqqBZed+f4w33GgQXFZOS4AOvyPbALgCYoLehigLAbbCNTkeY5RDcmmSI/sbp+s6\n' +
-    'mAiAKKvCdIqe17bltZ/rfEoL3gPKEfLXeN549LTj3XBp0hvG4loQ6eC1E1tRzSkf\n' +
-    'GJD4GIVvR+j12gXAaftj3ahfYxioBH7F7HQxzmWkwDyn3bqU54eaiB7f0ftsPpWM\n' +
-    'ceUaqkL2DZUvgN0efEJjnWy5y1/Gkq5GGWCROI9XG/SwXJ30BbVUehTbVcD70+ZF\n' +
-    '8QIDAQAB\n' +
-    '-----END PUBLIC KEY-----';
+    "-----BEGIN PUBLIC KEY-----\n" +
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5PxZ3DLj+zP6T6HFgzzk\n" +
+    "M77LdzP3fojBoLasw7EfzvLMnJNUlyRb5m8e5QyyJxI+wRjsALHvFgLzGwxM8ehz\n" +
+    "DqqBZed+f4w33GgQXFZOS4AOvyPbALgCYoLehigLAbbCNTkeY5RDcmmSI/sbp+s6\n" +
+    "mAiAKKvCdIqe17bltZ/rfEoL3gPKEfLXeN549LTj3XBp0hvG4loQ6eC1E1tRzSkf\n" +
+    "GJD4GIVvR+j12gXAaftj3ahfYxioBH7F7HQxzmWkwDyn3bqU54eaiB7f0ftsPpWM\n" +
+    "ceUaqkL2DZUvgN0efEJjnWy5y1/Gkq5GGWCROI9XG/SwXJ30BbVUehTbVcD70+ZF\n" +
+    "8QIDAQAB\n" +
+    "-----END PUBLIC KEY-----";
 
-  const staticAppKey = window.localStorage.getItem('appkey');
+  let staticAppKey = "";
 
-  const staticUserAgent = FaceTecSDK.createFaceTecAPIUserAgentString('');
+  let successCallback,
+    errorCallback = () => ({});
+
+  const staticUserAgent = FaceTecSDK.createFaceTecAPIUserAgentString("");
+
+  const defaultHomePage = new URL(PackageJson.default.homepage);
 
   const loadAssets = () => {
     // Defina um caminho de diretório para outros recursos do FaceTec Browser SDK.
-    FaceTecSDK.setResourceDirectory('../core-sdk/FaceTecSDK.js/resources');
+    // FaceTecSDK.setResourceDirectory("../core-sdk/FaceTecSDK.js/resources");
+    FaceTecSDK.setResourceDirectory(
+      `${defaultHomePage.pathname}core-sdk/FaceTecSDK.js/resources`
+    );
 
     // Defina o caminho do diretório para as imagens necessárias do FaceTec Browser SDK.
-    FaceTecSDK.setImagesDirectory('../core-sdk/FaceTec_images');
+    FaceTecSDK.setImagesDirectory("./../../../../../core-sdk/FaceTec_images");
 
     // Defina as personalizações do FaceTec Device SDK.
     ThemeHelpers.setAppTheme(ThemeHelpers.getCurrentTheme());
@@ -52,9 +62,7 @@ export var SampleApp = (function () {
         }
 
         SampleAppUtilities.displayStatus(
-          FaceTecSDK.getFriendlyDescriptionForFaceTecSDKStatus(
-            FaceTecSDK.getStatus()
-          )
+          CustomFaceTecStatus.status[FaceTecSDK.getStatus()].message
         );
       },
       resultProductKey,
@@ -75,11 +83,12 @@ export var SampleApp = (function () {
 
           // Set localization
           FaceTecSDK.configureLocalization(FaceTecStringsPtBr);
+
+          onLivenessCheckPressed();
         }
+
         SampleAppUtilities.displayStatus(
-          FaceTecSDK.getFriendlyDescriptionForFaceTecSDKStatus(
-            FaceTecSDK.getStatus()
-          )
+          CustomFaceTecStatus.status[FaceTecSDK.getStatus()].message
         );
       }
     );
@@ -87,23 +96,124 @@ export var SampleApp = (function () {
     SampleAppUtilities.formatUIForDevice();
   };
 
-  const getProductionKey = async () => {
+  const restartLiveness = () => {
+    // Inicialize o FaceTec Browser SDK e configure os recursos da interface do usuário.
+    FaceTecSDK.initializeInProductionMode(
+      resultProductKey,
+      deviceKeyIdentifier,
+      publicFaceScanEncryptionKey,
+      function (initializedSuccessfully) {
+        if (initializedSuccessfully) {
+          SampleAppUtilities.enableControlButtons();
+
+          //FaceTecSDK.configureLocalization({"localizationJSON": "br"});
+
+          // Set localization
+          FaceTecSDK.configureLocalization(FaceTecStringsPtBr);
+
+          onLivenessCheckPressed();
+        }
+        SampleAppUtilities.displayStatus(
+          CustomFaceTecStatus.status[FaceTecSDK.getStatus()].message
+        );
+      }
+    );
+
+    SampleAppUtilities.formatUIForDevice();
+
+    SampleAppUtilities.fadeOutMainUIAndPrepareForSession();
+
+    getSessionToken();
+  }
+  
+  const getProductionKey = async (nome, cpf, nascimento,idExternoCliente) => {
+      const facecaptchaService = new FaceCaptcha(axios, {
+        BaseURL: "https://comercial.certiface.com.br",
+        timeout: 20000,
+      });
+
+     await getNewAppKey(nome, cpf, nascimento,idExternoCliente).then(async(data) => {
+        staticAppKey = data.data.appkey;
+      
+
+        try {
+          const result = await facecaptchaService.getProductionKey({
+            appKey: staticAppKey,
+          });
+      
+          resultProductKey = result.productionKey;
+          console.log(result);
+      
+          loadAssets();
+
+        } catch (error) {
+          errorCallback('FATALERROR', 'Por favor consultar o administrador do sistema');
+        }
+      });
+    }
+
+  const getNewAppKey = async (nome, cpf, nascimento,idExternoCliente) => {
+
+    const FormData = require('form-data');
+    const formData = new FormData();
+    formData.append('nome', nome);
+    formData.append('cpf', cpf);
+    formData.append('nascimento', nascimento);
+    formData.append('idExternoCliente', idExternoCliente);
+
+    const result = await axios.post("https://app.factafinanceira.com.br/IntegracaoOiti/getAppKey", formData);
+
+    console.log(result);
+
+    if (result.status !== 200) {
+      errorCallback(
+        "FATALERROR",
+        "Por favor consultar o administrador do sistema"
+      );
+    }
+
+    return result;
+  };
+
+  const renewProductionKey = async (nome, cpf, nascimento,idExternoCliente) => {
     const facecaptchaService = new FaceCaptcha(axios, {
-      BaseURL: 'https://comercial.certiface.com.br',
+      BaseURL: "https://comercial.certiface.com.br",
     });
 
-    const result = await facecaptchaService.getProductionKey({
-      appKey: staticAppKey,
-    });
+    let result = {};
+
+    try {
+      result = await facecaptchaService.getProductionKey({
+        appKey: staticAppKey,
+      });
+      console.log("teste aqui agora: ", result);
+    } catch (error) {
+
+      
+      await getNewAppKey(nome, cpf, nascimento,idExternoCliente).then(async(data) => { 
+        staticAppKey = data.data.appkey;
+
+        try {
+        
+          result = await facecaptchaService.getProductionKey({
+            appKey: staticAppKey,
+          });
+        } catch (error) {
+          errorCallback('FATALERROR', 'RENEW Por favor consultar o administrador do sistema');
+          return
+        }
+
+      })
+      
+    }
 
     resultProductKey = result.productionKey;
-
-    loadAssets();
+    restartLiveness();
   };
 
   const getSessionToken = async () => {
     const facecaptchaService = new FaceCaptcha(axios, {
-      BaseURL: process.env.REACT_APP_BASE_URL,
+      BaseURL: "https://comercial.certiface.com.br",
       timeout: 20000,
     });
 
@@ -113,8 +223,6 @@ export var SampleApp = (function () {
     });
 
     resultSessionToken = result.sessionToken;
-
-    window.localStorage.setItem('hasLiveness', 'true');
 
     // Obtenha um token de sessão do FaceTec SDK e inicie o 3D Liveness Check.
     latestProcessor = new LivenessCheckProcessor(resultSessionToken, SampleApp);
@@ -127,23 +235,27 @@ export var SampleApp = (function () {
     getSessionToken();
   };
 
-  const onComplete = () => {
+  const onComplete = async () => {
     SampleAppUtilities.showMainUI();
 
     if (!latestProcessor.isSuccess()) {
       // Redefina o identificador de inscrição.
-      latestEnrollmentIdentifier = '';
+      latestEnrollmentIdentifier = "";
 
       // Mostrar mensagem de saída antecipada na tela. Se isso ocorrer, verifique os logs.
-      SampleAppUtilities.displayStatus(
-        'A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes.'
-      );
+      /*SampleAppUtilities.displayStatus(
+        "A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes."
+      );*/
+
+
+      errorCallback("NOTCONFIRMED", "A sessão foi encerrada antecipadamente, consulte os logs para obter mais detalhes  teste.")
 
       return;
     }
 
     // Mostrar mensagem de sucesso na tela
-    SampleAppUtilities.displayStatus('Enviado com sucesso');
+    SampleAppUtilities.displayStatus("Enviado com sucesso");
+    successCallback(staticAppKey);
   };
 
   const setLatestSessionResult = (sessionResult) => {
@@ -164,6 +276,11 @@ export var SampleApp = (function () {
     return staticAppKey;
   };
 
+  const settCallback = (success, error) => {
+    successCallback = success;
+    errorCallback = error;
+  };
+
   return {
     status,
     getProductionKey,
@@ -174,5 +291,7 @@ export var SampleApp = (function () {
     getLatestEnrollmentIdentifier,
     setLatestServerResult,
     getAppKey,
+    settCallback,
+    renewProductionKey,
   };
 })();

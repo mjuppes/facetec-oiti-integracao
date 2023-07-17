@@ -13,6 +13,8 @@ import CardAnalfabeto from '../EnvioDocAnalfabeto/CardAnalfabeto';
 import EnvioDocumentoUnicoCTPS from '../EnvioDocumentoUnicoCTPS/EnvioDocumentoUnicoCTPS';
 import EnvioDocUnicoIdentidade from '../EnvioDocUnicoIdentidade/EnvioDocUnicoIdentidade';
 import EnvioDocumentoEstrangeiro from '../EnvioDocumentoEstrangeiro/EnvioDocumentoEstrangeiro';
+
+import FaceTecApiOiti from '../FaceTecApiOiti/FaceTecApiOiti'
 import EnvioAudioUnico from '../EnvioAudioUnico/EnvioAudioUnico';
 import EnvioVideoUnico from '../EnvioVideoUnico/EnvioVideoUnico';
 import EnvioDocumento from '../EnvioDocumento/EnvioDocumento';
@@ -162,7 +164,9 @@ class FaceApiUnico extends Component {
         imagemExtrato : [],
         showModalExtrato: false,
         isComplementar : false,
-        id_inclusao : false
+        id_inclusao : false,
+        isOiti : true,
+        processouOiti : false
       };
 
       if (this.props.location.state === undefined || this.props.location.state === '') {
@@ -339,6 +343,16 @@ class FaceApiUnico extends Component {
         this.state.imagemSelfieOITI = imagemSelfie;
         this.state.id_tabela_unico = id_tabela_unico;
     }
+
+    getStateSelfieOiti = (imagemSelfie) => {
+      this.state.tirarSelfie = true;
+      this.state.documentosUnico = true;
+      this.state.processouOiti = true;
+      this.state.imagemSelfie = imagemSelfie;
+      this.state.imagemSelfieOITI = imagemSelfie;
+  }
+
+
 
     getTipoDocumento = (tipoDocumento) => {
 		    if (tipoDocumento === 'ANALFABETO') { //Se for analfabeto vai retornar para etapaDocumento para selecionar identidade ou CNH da testemunha
@@ -2061,8 +2075,27 @@ class FaceApiUnico extends Component {
                                     </Col>
                                 }
 
-                                {(this.state.tirarSelfie === true) && /* SELFIE */
-                                    <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
+                                {(this.state.tirarSelfie === true && this.state.isOiti === true && this.state.processouOiti === false) && /* SELFIE */
+                                  <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
+                                    <FaceTecApiOiti 
+                                      codigoAF = {atob(this.state.codigoAFOriginal)}
+                                      nome = {this.state.nome}
+                                      cpf = {this.state.cpf}
+                                      isRepresentanteLegal = {this.state.isRepresentanteLegal}
+                                      nomeRepresentanteLegal = {this.state.obj_proposta.NOME_REPRESENTANTE}
+                                      cpfRepresentanteLegal = {this.state.obj_proposta.CPF_REPRESENTANTE}
+                                      nascimento = {this.state.nascimento}
+                                      key = {this.state.keyComponente}
+                                      onClick = {this.reloadComponente.bind(this)}
+                                      getStateSelfieOiti = {this.getStateSelfieOiti}
+                                    />
+                                  </Col>
+                                }
+
+
+                                {(this.state.tirarSelfie === true && this.state.isOiti === false) && /* SELFIE */
+                                  <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
+                                      <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
                                        <EnvioSelfieUnico
                                           voltarInicioUnicoSelfie = {this.voltarInicioUnicoSelfie}
                                           tentativaUnico = {this.state.tentativaUnico}
@@ -2076,11 +2109,9 @@ class FaceApiUnico extends Component {
                                           key = {this.state.keyComponente}
                                           onClick = {this.reloadComponente.bind(this)}
                                           getStateSelfie = {this.getStateSelfie}
-                                          tipo_operacao = {this.state.tipo_operacao}
-                                          codVinculado = {this.state.codVinculado}
-                                          id_inclusao = {this.state.id_inclusao}
                                         />
                                     </Col>
+                                  </Col>
                                 }
 
                                 {(this.state.documentosUnico === true) && /* TIPOS DE DOCUMENTOS UNICO */

@@ -19,22 +19,22 @@ export var Config = (function () {
   // Este aplicativo pode modificar a personalização para demonstrar diferentes preferências de aparência/sensação
   // NOTA: Esta função é preenchida automaticamente pelo FaceTec SDK Configuration Wizard com base em suas personalizações de interface do usuário que você escolheu na GUI do Configuration Wizard.
   function retrieveConfigurationWizardCustomization(FaceTecSDK) {
-    var sdkImageDirectory = '../assets/js/core/core-sdk/FaceTec_images';
+    var sdkImageDirectory = "../assets/js/core/core-sdk/FaceTec_images";
 
     // Para personalização de cores
-    var outerBackgroundColor = '#ffffff';
-    var frameColor = '#ffffff';
-    var borderColor = '#417FB2';
-    var ovalColor = '#417FB2';
-    var dualSpinnerColor = '#417FB2';
-    var textColor = '#417FB2';
-    var buttonAndFeedbackBarColor = '#417FB2';
-    var buttonAndFeedbackBarTextColor = '#ffffff';
-    var buttonColorHighlight = '#396E99';
-    var buttonColorDisabled = '#B9CCDE';
+    var outerBackgroundColor = "#ffffff";
+    var frameColor = "#ffffff";
+    var borderColor = "#417FB2";
+    var ovalColor = "#417FB2";
+    var dualSpinnerColor = "#417FB2";
+    var textColor = "#417FB2";
+    var buttonAndFeedbackBarColor = "#417FB2";
+    var buttonAndFeedbackBarTextColor = "#ffffff";
+    var buttonColorHighlight = "#396E99";
+    var buttonColorDisabled = "#B9CCDE";
 
     // Para personalização do raio do canto do quadro
-    let frameCornerRadius = '20px';
+    let frameCornerRadius = "20px";
 
     // Para personalização do botão Cancelar
     var cancelButtonImage = `${sdkImageDirectory}/FaceTec_cancel.png`;

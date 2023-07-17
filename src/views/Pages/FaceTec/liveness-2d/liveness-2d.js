@@ -1,14 +1,14 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react';
-import { FaceCaptcha } from '@oiti/facecaptcha-core';
-import { Col, Row } from 'react-bootstrap';
-import { Button } from 'react-bootstrap';
-import EnvironmentIcon from '../assets/img/environment-icon.png';
-import PersonIcon from '../assets/img/person-icon.png';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import Success from '../assets/img/success.png';
-import ModalError from './modal-error';
-import { Crypto } from '../crypto/crypto';
+import React, { Fragment, useEffect, useRef, useState } from "react";
+import { FaceCaptcha } from "@oiti/facecaptcha-core";
+import { Col, Row } from "react-bootstrap";
+import { Button } from "react-bootstrap";
+import EnvironmentIcon from "../assets/img/environment-icon.png";
+import PersonIcon from "../assets/img/person-icon.png";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import Success from "../assets/img/success.png";
+import ModalError from "./modal-error";
+import { Crypto } from "../crypto/crypto";
 
 const Liveness2D = () => {
   const [show, setShow] = useState(false);
@@ -16,11 +16,11 @@ const Liveness2D = () => {
   const handleClose = () => {
     setShow(false);
 
-    window.localStorage.removeItem('errorMessage');
+    window.localStorage.removeItem("errorMessage");
   };
   const handleShow = () => setShow(true);
 
-  const staticAppKey = window.localStorage.getItem('appkey');
+  const staticAppKey = window.localStorage.getItem("appkey");
 
   const liveness2DArea = useRef(null);
   const video = useRef(null);
@@ -34,27 +34,27 @@ const Liveness2D = () => {
 
   let showIniciar = true;
   let isLoaded = false;
-  let message = '';
-  let emojiBase64 = '';
-  let msgBase64 = '';
-  let challenge = '';
-  let fcvarSnaps = '';
-  let fcvarFirstSnap = '';
+  let message = "";
+  let emojiBase64 = "";
+  let msgBase64 = "";
+  let challenge = "";
+  let fcvarSnaps = "";
+  let fcvarFirstSnap = "";
   let livenessSuccess = false;
   let livenessError = false;
 
-  const body = document.getElementsByTagName('body');
+  const body = document.getElementsByTagName("body");
 
   // Estado inicial das divs e elementos HTML da páginas
   const initialState = () => {
     showIniciar = true;
     isLoaded = false;
-    message = '';
-    emojiBase64 = '';
-    msgBase64 = '';
-    challenge = '';
-    fcvarSnaps = '';
-    fcvarFirstSnap = '';
+    message = "";
+    emojiBase64 = "";
+    msgBase64 = "";
+    challenge = "";
+    fcvarSnaps = "";
+    fcvarFirstSnap = "";
     livenessSuccess = false;
     livenessError = false;
 
@@ -69,14 +69,14 @@ const Liveness2D = () => {
 
   // Iniciando a câmera
   const showLiveness2D = () => {
-    body[0].style.overflow = 'hidden';
+    body[0].style.overflow = "hidden";
 
-    liveness2DArea.current.classList.remove('d-none');
+    liveness2DArea.current.classList.remove("d-none");
 
     setTimeout(() => {
-      video.current.setAttribute('autoplay', '');
-      video.current.setAttribute('muted', '');
-      video.current.setAttribute('playsinline', '');
+      video.current.setAttribute("autoplay", "");
+      video.current.setAttribute("muted", "");
+      video.current.setAttribute("playsinline", "");
 
       navigator.mediaDevices
         .getUserMedia({ video: true, audio: false })
@@ -85,7 +85,7 @@ const Liveness2D = () => {
           video.current.play();
         })
         .catch(function (err) {
-          console.log('Não há permissões para acessar a webcam');
+          console.log("Não há permissões para acessar a webcam");
         });
     }, 1000);
   };
@@ -94,7 +94,7 @@ const Liveness2D = () => {
   const startCapture = () => {
     showIniciar = false;
     isLoaded = true;
-    message = 'Iniciando...';
+    message = "Iniciando...";
 
     showSpanMessage(message);
     showHideDivLoader();
@@ -107,7 +107,7 @@ const Liveness2D = () => {
   // Chamada do challenge
   const getChallengeFromLib = async () => {
     const facecaptchaService = new FaceCaptcha(axios, {
-      BaseURL: process.env.REACT_APP_BASE_URL,
+      BaseURL: "https://comercial.certiface.com.br",
     });
 
     const result = await facecaptchaService.startChallenge({
@@ -117,7 +117,7 @@ const Liveness2D = () => {
     challenge = result;
 
     if (result.challenges.length > 0) {
-      message = '';
+      message = "";
       isLoaded = false;
 
       showSpanMessage(message);
@@ -128,9 +128,9 @@ const Liveness2D = () => {
 
   // Preparar desafios
   const prepareChallenge = (index) => {
-    emojiBase64 = '';
-    msgBase64 = '';
-    message = '';
+    emojiBase64 = "";
+    msgBase64 = "";
+    message = "";
 
     if (index >= challenge.numberOfChallenges) {
       stopChallenge();
@@ -140,7 +140,7 @@ const Liveness2D = () => {
     // Intervalo de captura de image do video
     for (let i = 1; i <= challenge.snapNumber; i++) {
       setTimeout(function () {
-        console.log(index + ' - snap: ' + i);
+        console.log(index + " - snap: " + i);
         snapTick(challenge.challenges[index]);
       }, challenge.snapFrequenceInMillis * i);
     }
@@ -162,10 +162,10 @@ const Liveness2D = () => {
 
   // finaliza desafios
   const stopChallenge = () => {
-    message = 'Enviando...';
+    message = "Enviando...";
     isLoaded = true;
-    msgBase64 = '';
-    emojiBase64 = '';
+    msgBase64 = "";
+    emojiBase64 = "";
 
     showSpanMessage(message);
     showImgMsg(msgBase64);
@@ -178,12 +178,12 @@ const Liveness2D = () => {
   const snapTick = (fcvarCurCha) => {
     let snapb64 = snap();
 
-    if (fcvarFirstSnap === '') {
+    if (fcvarFirstSnap === "") {
       fcvarFirstSnap = snapb64;
     }
 
     // necessario adicionar o codigo do tipoFace entre o 'data:image/jpeg' e o snapb64
-    snapb64 = snapb64.split('data:image/jpeg;base64,');
+    snapb64 = snapb64.split("data:image/jpeg;base64,");
     snapb64 = `data:image/jpeg;base64,${snapb64[0]}type:${fcvarCurCha.tipoFace.codigo},${snapb64[1]}`;
 
     fcvarSnaps += snapb64;
@@ -191,9 +191,9 @@ const Liveness2D = () => {
 
   // captura imagem da câmera
   const snap = () => {
-    var video = document.getElementById('video');
-    var canvas = document.getElementById('fc_canvas');
-    var ctx = canvas.getContext('2d');
+    var video = document.getElementById("video");
+    var canvas = document.getElementById("fc_canvas");
+    var ctx = canvas.getContext("2d");
 
     ctx.canvas.width = 320;
     ctx.canvas.height = 480;
@@ -245,7 +245,7 @@ const Liveness2D = () => {
     );
 
     var img = new Image();
-    img.src = canvas.toDataURL('image/jpeg');
+    img.src = canvas.toDataURL("image/jpeg");
 
     return img.src;
   };
@@ -253,7 +253,7 @@ const Liveness2D = () => {
   // Chamada do captcha
   const getLivenessCaptchaFromLib = async (appkey, chkey, images) => {
     const facecaptchaService = new FaceCaptcha(axios, {
-      BaseURL: process.env.REACT_APP_BASE_URL,
+      BaseURL: "https://comercial.certiface.com.br",
       timeout: 20000,
     });
 
@@ -282,7 +282,7 @@ const Liveness2D = () => {
 
       setTimeout(() => {
         window.localStorage.setItem(
-          'errorMessage',
+          "errorMessage",
           `${result.codID} - ${result.cause}`
         );
 
@@ -295,18 +295,18 @@ const Liveness2D = () => {
 
   // Encerrando a câmera
   const closeLiveness2D = (appkey) => {
-    body[0].removeAttribute('style');
+    body[0].removeAttribute("style");
 
-    liveness2DArea.current.classList.add('d-none');
+    liveness2DArea.current.classList.add("d-none");
 
-    video.current.removeAttribute('autoplay');
-    video.current.removeAttribute('muted');
-    video.current.removeAttribute('playsinline');
+    video.current.removeAttribute("autoplay");
+    video.current.removeAttribute("muted");
+    video.current.removeAttribute("playsinline");
 
     video.current.srcObject.getTracks()[0].stop();
-    video.current.src = '';
+    video.current.src = "";
 
-    window.localStorage.setItem('hasLiveness', 'true');
+    window.localStorage.setItem("hasLiveness", "true");
 
     initialState();
   };
@@ -318,34 +318,34 @@ const Liveness2D = () => {
 
   const showHideDivLoader = () => {
     isLoaded
-      ? divLoader.current.classList.remove('d-none')
-      : divLoader.current.classList.add('d-none');
+      ? divLoader.current.classList.remove("d-none")
+      : divLoader.current.classList.add("d-none");
   };
 
   const showHideDivMsg = () => {
     isLoaded
-      ? divMsg.current.classList.remove('d-none')
-      : divMsg.current.classList.add('d-none');
+      ? divMsg.current.classList.remove("d-none")
+      : divMsg.current.classList.add("d-none");
   };
 
   const showHideDivButton = () => {
     showIniciar
-      ? divButton.current.classList.remove('d-none')
-      : divButton.current.classList.add('d-none');
+      ? divButton.current.classList.remove("d-none")
+      : divButton.current.classList.add("d-none");
   };
 
   const showHideDivConfirmSuccess = () => {
     livenessSuccess
-      ? liveness2DResult.current.classList.remove('d-none')
-      : liveness2DResult.current.classList.add('d-none');
+      ? liveness2DResult.current.classList.remove("d-none")
+      : liveness2DResult.current.classList.add("d-none");
   };
 
   const showImgMsg = (img) => {
-    imgMsg.current.setAttribute('src', img);
+    imgMsg.current.setAttribute("src", img);
   };
 
   const showImgChallenge = (img) => {
-    imgChallenge.current.setAttribute('src', img);
+    imgChallenge.current.setAttribute("src", img);
   };
 
   useEffect(() => {
@@ -364,7 +364,7 @@ const Liveness2D = () => {
         </Col>
         <Col xs={12} className="mb-4">
           <Row className="mb-3">
-            <Col xs={'auto'}>
+            <Col xs={"auto"}>
               <img src={EnvironmentIcon} alt="" aria-hidden="true" />
             </Col>
             <Col xs={10} className="d-flex align-items-center">
@@ -372,7 +372,7 @@ const Liveness2D = () => {
             </Col>
           </Row>
           <Row>
-            <Col xs={'auto'}>
+            <Col xs={"auto"}>
               <img src={PersonIcon} alt="" aria-hidden="true" />
             </Col>
             <Col xs={10} className="d-flex align-items-center">
@@ -425,7 +425,7 @@ const Liveness2D = () => {
             ref={divButton}
             id="divButton"
             className={`
-              ${showIniciar ? '' : 'd-none'}
+              ${showIniciar ? "" : "d-none"}
               divButton
             `}
           >
@@ -454,7 +454,7 @@ const Liveness2D = () => {
 
       <ModalError show={show} handleClose={handleClose} />
 
-      <canvas id="fc_canvas" style={{ display: 'none' }}></canvas>
+      <canvas id="fc_canvas" style={{ display: "none" }}></canvas>
     </Fragment>
   );
 };

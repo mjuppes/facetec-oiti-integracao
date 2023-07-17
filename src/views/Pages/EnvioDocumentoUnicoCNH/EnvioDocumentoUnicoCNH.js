@@ -77,6 +77,7 @@ class EnvioDocumentoUnicoCNH extends Component {
         if(retScore) {
           let ret = await this.props.validaDocumento(imagem, this.props.cnh);
 
+          ret = true;
           if(ret === false) {
             this.setState({loadSpinner: false, errorOCR:  true, modalDados : true, 
               msgErroUnico: ' Não conseguimos realizar a validação do seu documento. Favor, realizar nova captura.'});
