@@ -74,7 +74,7 @@ class DadosLimiteCreditoBlocoTemplate extends Component {
         <CardBody className="text-left">
           <h5 className="text-center border-bottom border-light">
             Limites Cartão de Crédito
-            <p><small className="text-muted text-capitalize">(Cartão Consignado Benefício) </small></p>
+            <p><small className="text-muted text-capitalize">(Cartão Consignado Benefício) teste </small></p>
           </h5>
           <Row>
             <Col xs="12" sm="6" md="6">

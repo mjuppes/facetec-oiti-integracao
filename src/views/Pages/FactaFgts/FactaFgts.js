@@ -956,7 +956,7 @@ class FactaFgts extends Component {
                           : null
                         }
 
-                        { (AF.Tipo_Operacao === 17)
+                        { (AF.Tipo_Operacao === 17 || AF.Tipo_Operacao === 43 || AF.Tipo_Operacao === 44)
                           ? (
                             <>
                               <Card className="border-white shadow" style={{borderRadius: '8px'}}>

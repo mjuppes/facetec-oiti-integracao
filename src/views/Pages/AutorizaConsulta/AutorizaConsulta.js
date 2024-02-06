@@ -18,6 +18,7 @@ class AutorizaConsulta extends Component {
       nome : this.utf8_decode(nome),
       cpf : dados[2],
       beneficio : dados[3],
+      token : dados[4],
       dataHora: [new Date().getFullYear(), new Date().getMonth()+1, new Date().getDate()].join('-')+' '+[new Date().getHours(),new Date().getMinutes(),new Date().getSeconds()].join(':'),
       confirmado: false, 
       localizacao: '',
@@ -86,7 +87,8 @@ class AutorizaConsulta extends Component {
     const formData = new FormData();
     formData.append('id_consulta', this.state.id_consulta);
     formData.append('localizacao', this.state.localizacao);
-    
+    formData.append('token', this.state.token);
+    formData.append('cpf', this.state.cpf);
 
     const headers =  {'Content-Type': 'multipart/form-data' };
     await axios.post(url, formData, {

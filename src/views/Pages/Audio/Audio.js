@@ -172,7 +172,7 @@ class Audio extends Component {
   				scriptAudio += 'a ser pago em <span class="font-weight-bold">' + numeroPmt + '</span> parcelas fixas mensais ';
   				scriptAudio += 'de <span class="font-weight-bold">' + valorPmt + '</span>, ';
   				scriptAudio += 'a ' + (numeroPmt > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">benefício</span>.';
-  			} else if (tipoOperacao === 11) { // CARTÃO DIGITAL
+  			} else if (tipoOperacao === 11 || tipoOperacao === 46) { // CARTÃO DIGITAL
   				scriptAudio += 'confirmo a contratação de cartão consignado ' + (averbador === 10 ? 'contratado junto a <span class="font-weight-bold">FACTA FINANCEIRA</span>, ' : '<span class="font-weight-bold">' + _orgao + '</span> ') + '';
   				scriptAudio += 'com saque de <span class="font-weight-bold">' + valorProposta + '</span>, ';
   				scriptAudio += 'a ser pago em <span class="font-weight-bold">' + numeroPmt + '</span> parcelas fixas mensais ';

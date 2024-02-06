@@ -159,7 +159,7 @@ class CedulaFactaInss extends Component {
       }
       else {
         //this.state.proximoLink = '/tipo-documento/'+this.props.match.params.propostaId; // Rota antiga para já tirar foto dos DOCS
-        if (parseInt(this.state.tipoOperacao.Codigo) === 33) {
+        if (parseInt(this.state.tipoOperacao.Codigo) === 33 || parseInt(this.state.tipoOperacao.Codigo) === 45) {
           this.state.proximoLink = '/facta-inss-seguro/'+this.props.match.params.propostaId;
         } else {
           this.state.proximoLink = '/declaracao-de-residencia/'+this.props.match.params.propostaId;
@@ -169,6 +169,7 @@ class CedulaFactaInss extends Component {
 
     }
 
+    console.log(this.props.location.state);
     localStorage.setItem('@app-factafinanceira-formalizacao/dados_ccb/erro', '');
     localStorage.setItem('@app-factafinanceira-formalizacao/print_ccb_1', '');
     localStorage.setItem('@app-factafinanceira-formalizacao/print_ccb_2', '');
@@ -547,7 +548,25 @@ class CedulaFactaInss extends Component {
                             <p className="font-weight-bold text-capitalize">{ this.state.obj_proposta !== [] && AF.TIPOBENEFICIO !== '' && this.state.espBeneficio[0] !== undefined ? AF.TIPOBENEFICIO + ' - ' + this.state.espBeneficio[0].NOME.toLowerCase() : ' - ' }</p>
                           </Col>
                         </Row>
-                        {(parseInt(AF.Tipo_Operacao) === 35 || parseInt(AF.Tipo_Operacao) === 37) &&
+
+                        { AF.VLRDATAPREV !== '' &&
+                          <div>
+                            <Row>
+                              <Col xs="12" sm="12" xm="12">
+                                <label>Previsão do valor do benefício desconto de empréstimo:</label>
+                                <p className="font-weight-bold text-capitalize">{  parseFloat(AF.VLRDATAPREV).toLocaleString('pt-BR', formatoValor)  }</p>
+                              </Col>
+                            </Row>
+                            
+                            <Row>
+                            <Col xs="12" sm="12" xm="12">
+                              <p className="font-weight-bold">*ATENÇÃO: O valor do benefício é uma previsão, considerando a situação do benefício e os descontos previstos na data da proposta de empréstimo.</p>
+                            </Col>
+                            </Row>
+                          </div>
+                        }
+
+                        {([35,37,43,44,47,48].indexOf(parseInt(AF.Tipo_Operacao)) !== -1) &&
                           <Row> 
                             <Col xs="12" sm="12" xm="12">
                               <label>Nome Representante Legal</label>
@@ -594,7 +613,7 @@ class CedulaFactaInss extends Component {
                             <p className="font-weight-bold text-capitalize">{ this.state.obj_proposta !== [] && AF.TIPOBENEFICIO !== '' && this.state.espBeneficio[0] !== undefined ? AF.TIPOBENEFICIO + ' - ' + this.state.espBeneficio[0].NOME.toLowerCase() : ' - ' }</p>
                           </Col>
                         </Row>
-                        {(parseInt(AF.Tipo_Operacao) === 35 || parseInt(AF.Tipo_Operacao) === 37) &&
+                        {([35,37,43,44,47,48].indexOf(parseInt(AF.Tipo_Operacao)) !== -1) &&
                           <Row>
                             <Col xs="12" sm="12" xm="12">
                               <label>Nome Representante Legal</label>
@@ -1067,7 +1086,7 @@ class CedulaFactaInss extends Component {
                           : null
                         }
 
-                        { AF.Tipo_Operacao === 17 || parseInt(this.state.obj_proposta.Averbador) === 23
+                        { (AF.Tipo_Operacao === 17 || AF.Tipo_Operacao === 43 || AF.Tipo_Operacao === 44) || parseInt(this.state.obj_proposta.Averbador) === 23
                           ? (
                             <>
                               <Card className="border-white shadow" style={{borderRadius: '8px'}}>
@@ -1193,7 +1212,7 @@ class CedulaFactaInss extends Component {
                             </Col>
                           </Row>
 
-                          { [13, 14, 17, 18, 27].indexOf(COD_TP_OPERACAO) !== -1 || parseInt(this.state.obj_proposta.Averbador) === 23
+                          { [13, 14, 17, 18, 27, 43, 44].indexOf(COD_TP_OPERACAO) !== -1 || parseInt(this.state.obj_proposta.Averbador) === 23
                             ? <Row>
                                 <Col xs="12" sm="12" xm="12">
                                   <label>Seguro Prestamista Proposta { CODIGO }</label>

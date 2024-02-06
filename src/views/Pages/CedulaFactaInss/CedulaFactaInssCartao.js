@@ -74,11 +74,13 @@ class CedulaFactaInssCartao extends Component {
       codigoNormativa: 0,
       erroPrintCCB : '',
       etapaFinal : false,
-      vlrSeguro : 0
+      vlrSeguro : 0,
+      mdlLgSeguroPerm: false,
     };
 
     this.toggleModalAbertura = this.toggleModalAbertura.bind(this);
     this.toggleModalSeguro = this.toggleModalSeguro.bind(this);
+    this.toggleModalSeguroPerm = this.toggleModalSeguroPerm.bind(this);
     this.toggleModalPort = this.toggleModalPort.bind(this);
 
     if (this.props.location.state === undefined) {
@@ -161,7 +163,11 @@ class CedulaFactaInssCartao extends Component {
       }
       else {
         //this.state.proximoLink = '/tipo-documento/'+this.props.match.params.propostaId; // Rota antiga para já tirar foto dos DOCS
-        this.state.proximoLink = '/facta-inss-seguro/'+this.props.match.params.propostaId;
+        if ([46,48].indexOf(parseInt(this.state.tipoOperacao.Codigo)) !== -1) {
+          this.state.proximoLink = '/declaracao-de-residencia/'+this.props.match.params.propostaId;
+        } else {
+          this.state.proximoLink = '/facta-inss-seguro/'+this.props.match.params.propostaId;
+        }
       }
 
     }
@@ -183,6 +189,13 @@ class CedulaFactaInssCartao extends Component {
   toggleModalSeguro() {
     this.setState({
       mdlLgSeguro: !this.state.mdlLgSeguro,
+    });
+  }
+
+
+  toggleModalSeguroPerm() {
+    this.setState({
+      mdlLgSeguroPerm: !this.state.mdlLgSeguroPerm,
     });
   }
 
@@ -557,6 +570,18 @@ class CedulaFactaInssCartao extends Component {
                             <p className="font-weight-bold text-capitalize">{ this.state.obj_proposta !== [] && AF.TIPOBENEFICIO !== '' && this.state.espBeneficio[0] !== undefined ? AF.TIPOBENEFICIO + ' - ' + this.state.espBeneficio[0].NOME.toLowerCase() : ' - ' }</p>
                           </Col>
                         </Row>
+                        {([47,48].indexOf(parseInt(AF.Tipo_Operacao)) !== -1) &&
+                          <Row>
+                            <Col xs="12" sm="12" xm="12">
+                              <label>Nome Representante Legal</label>
+                              <p className="font-weight-bold">{AF.NOME_REPRESENTANTE}</p>
+                            </Col>
+                            <Col xs="12" sm="12" xm="12">
+                              <label>CPF Representante Legal</label>
+                              <p className="font-weight-bold">{AF.CPF_REPRESENTANTE}</p>
+                            </Col>
+                          </Row>
+                        }
                       </CardBody>
                     </Card>
 
@@ -597,7 +622,79 @@ class CedulaFactaInssCartao extends Component {
                       ) : null
                     }
 
-                    <DadosLimiteCreditoBlocoTemplate proposta={AF} codigo_af ={atob(this.state.codigoAF64)} tipo_operacao={TIPO_OPERACAO} cod_tipo_operacao={COD_TP_OPERACAO}/>
+                    {([45,46,47,48].indexOf(COD_TP_OPERACAO) === -1) &&
+                      <DadosLimiteCreditoBlocoTemplate proposta={AF} codigo_af ={atob(this.state.codigoAF64)} tipo_operacao={TIPO_OPERACAO} cod_tipo_operacao={COD_TP_OPERACAO}/>
+                    }
+                    
+                    {([48,46].indexOf(COD_TP_OPERACAO) !== -1) &&
+                    <Card className="border-white shadow" style={{borderRadius: '8px'}}>
+                        <CardBody className="text-left">
+                          <h5 className="text-center border-bottom border-light pb-3 font-weight-bold">SEGURO PRESTAMISTA</h5>
+                          <Row>
+                            <Col xs="12" sm="12" xm="12">
+                              <FormGroup check inline>
+                                <Input className="form-check-input" type="radio" id="inline-radio1" name="rd_seguro_prestamista" value="1" onChange={this.handleChange} defaultChecked={this.state.aceitouSeguro} disabled={!this.state.aceitouSeguro} />
+                                <Label className="form-check-label" check htmlFor="inline-radio1">Sim</Label>
+                              </FormGroup>
+                              <FormGroup check inline>
+                                <Input className="form-check-input" type="radio" id="inline-radio2" name="rd_seguro_prestamista" value="0" disabled />
+                                <Label className="form-check-label" check htmlFor="inline-radio2">Não</Label>
+                              </FormGroup>
+                            </Col>
+                          </Row>
+
+                          <Row>
+                                <Col xs="12" sm="12" xm="12">
+                                <label>Prêmio</label>
+                                  <p className="font-weight-bold">
+                                  {
+                                     parseFloat(AF.VLRSEGURO).toLocaleString('pt-BR', formatoValor)
+                                  }
+                                  </p>
+
+                                </Col>
+                          </Row>
+
+
+                          <Row>
+                            <Col xs="12" sm="12" xm="12">
+                              <label>Apólice Nº</label>
+                              <p className="font-weight-bold"> - </p>
+                            </Col>
+                          </Row>
+
+                          <Row>
+                            <Col xs="12" sm="12" xm="12">
+                              <label>Razão Social</label>
+                              <p className="font-weight-bold">FACTA SEGURADORA S/A SEGURADORA</p>
+                            </Col>
+                          </Row>
+
+                          <Row>
+                            <Col xs="12" sm="12" xm="12">
+                              <label>SUSEPE Nº</label>
+                              <p className="font-weight-bold">15414.99999/2019-99</p>
+                            </Col>
+                          </Row>
+
+                          <Row>
+                            <Col xs="12" sm="12" xm="12">
+                              <p className="font-weight-bold">Obs: Descontado uma única vez na fatura do Cartão Benefício.</p>
+                            </Col>
+                          </Row>
+
+                          <Row>
+                            <Col xs="12" sm="12" xm="12" className="text-center">
+                              <Button onClick={this.toggleModalSeguroPerm} className="btn-block font-weight-bold mt-2" color="outline-primary">Visualizar o bilhete do seguro</Button>
+                            </Col>
+                          </Row>
+                        </CardBody>
+                      </Card>
+
+
+                   
+                  }
+
 
                     
                     <Card className="border-white shadow" style={{borderRadius: '8px'}}>
@@ -858,6 +955,89 @@ de Porto Alegre, sob n° 1685503.
               </Row>
 
             </Col>
+
+            <Modal isOpen={this.state.mdlLgSeguroPerm} toggle={this.toggleModalSeguroPerm} className={'modal-lg ' + this.props.className}>
+                      <ModalHeader toggle={this.toggleModalSeguroPerm}>
+                        <img src={ require('../../../assets/img/ass_seguradora_1024.png') } alt="Logo Facta Seguradora" style={{ maxWidth: '256px' }}/>
+                      </ModalHeader>
+                      <ModalBody>
+                        <p>
+                        1. Este seguro tem por objetivo garantir o pagamento de indenização ao credor em caso de ocorrência de evento coberto, equivalente ao saldo da dívida ou do compromisso assumido pelo segurado junto ao credor.
+                        </p>
+
+                        <p>
+                        2. Somente poderão contratar as coberturas oferecidas nos bilhetes deste plano de microsseguro as pessoas com idade mínima de 14 (quatorze) anos e máxima de 80 (oitenta) anos.
+                        </p>
+
+                        <p>
+                        3. CARÊNCIA - Período, contado a partir da data de início de vigência do seguro, durante o qual, na ocorrência do sinistro, os beneficiários do segurado não terão direito à percepção dos capitais segurados contratados. Não há carência para este Plano de Microsseguro, exceto em caso de suicídio, que deverá ser respeitada uma carência de 24 (vinte e quatro) meses.
+                        </p>
+
+                        <p>
+                        4. FRANQUIA: Período contínuo, determinado no bilhete, contado a partir da data do sinistro, durante o qual a Seguradora estará isenta de qualquer responsabilidade indenizatória. Não há franquia para este Plano de Microsseguro.
+                        </p>
+
+                        <p>
+                        5. VIGÊNCIA: O período de vigência do seguro será igual ao prazo do contrato do empréstimo.
+                        </p>
+
+                        <p>
+                        6. SEGURADO: O capital segurado está na modalidade “vinculado”, pois o capital segurado será durante toda vigência, necessariamente, igual ao valor da obrigação, sendo alterado automaticamente a cada amortização ou reajuste.
+                        </p>
+
+                        <p>
+                        7. ATUALIZAÇÃO DO CAPITAL SEGURADO: A periodicidade utilizada para o recálculo do valor do Capital Segurado será mensal, refletindo a amortização e/ou reajuste ocorrido no contrato de empréstimo no decorrer do mês anterior.
+                        </p>
+
+                        <p>
+                        8. RISCOS EXCLUÍDOS - Estão expressamente excluídos de todas as coberturas deste seguro os eventos ocorridos, direta ou indiretamente, em consequência de: a) atos ilícitos dolosos praticados pelo segurado principal ou dependente, pelo beneficiário ou pelo representante legal de qualquer deles; b) suicídio ou sequelas decorrentes da sua tentativa, caso ocorram nos dois primeiros anos de vigência da cobertura; c) epidemia ou pandemia declarada por órgão competente; d) furacões, ciclones, terremotos, maremotos, erupções vulcânicas e outras convulsões da natureza; e) danos e perdas causados por atos terroristas; f) atos ou operações de guerra, declarada ou não, de guerra química ou bacteriológica, guerra civil, guerrilha; revolução, motim, revolta, sedição, sublevação ou outras perturbações da ordem pública e delas decorrentes, exceto a prestação de serviço militar e atos de humanidade em auxílio de outrem.
+                        </p>
+
+                        <p>
+                        9. "DOCUMENTAÇÃO PARA O RECEBIMENTO DE INDENIZAÇÃO – O prazo máximo para o pagamento da indenização é de 10 (dez) dias corridos contados a partir da data de protocolo de entrega da documentação comprobatória, requerida nos documentos contratuais, junto à Seguradora ou seu representante. Os documentos necessários à liquidação de sinistros são os abaixo listados e deverão ser encaminhados à Seguradora em vias originais ou cópias autenticadas:
+                        </p>
+
+                        <p>
+                        Cobertura Prestamista - Morte: Contrato entre segurado e credor, contendo descrição das prestações periódicas decorrentes da dívida contraída ou do compromisso assumido pelo segurado junto ao credor;  Extrato ou resumo fornecido pelo credor contendo valor presente das parcelas vincendas que corresponderá ao saldo da dívida ou do compromisso na data do sinistro; Formulário de Aviso de Sinistro fornecido pela Seguradora, devidamente preenchido e assinado pelo representante legal do Segurado; Certidão de Óbito do Segurado; Boletim de Ocorrência Policial, se houver; Carteira Nacional de Habilitação (CNH), na hipótese do sinistro envolver veículo dirigido pelo Segurado; Documento de identificação do(s) beneficiário(s)."
+                        </p>
+
+                        <p>
+                        10. A contratação do seguro é opcional, sendo facultado ao segurado o seu cancelamento a qualquer tempo, com devolução do prêmio pago referente ao período a decorrer, se houver.
+                        </p>
+
+                        <p>
+                        11. Na ocorrência de evento coberto, caso o valor da obrigação financeira devida ao credor seja menor do que o valor a ser indenizado no seguro prestamista, a diferença apurada será paga ao segundo beneficiário indicado, conforme dispuserem as condições gerais. O segundo beneficiário poderá ser livremente indicado pelo segurado no Bilhete. Não havendo indicação, a indenização será paga conforme legislação em vigor.
+                        </p>
+
+                        <p>
+                        12. Em caso de extinção antecipada da obrigação, o seguro estará automaticamente cancelado, devendo a seguradora ser formalmente comunicada, sem prejuízo, se for o caso, da devolução do prêmio pago referente ao período a decorrer.
+                        </p>
+
+                        <p>
+                        13. SUSEP – Superintendência de Seguros Privados – Autarquia Federal responsável pela fiscalização, normatização e controle dos mercados de seguro, previdência complementar aberta, capitalização, resseguro e corretagem de seguros.
+                        </p>
+
+                        <p className="ml-5">
+                        O registro do plano deste seguro na SUSEP – Superintendência de Seguros Privados não implica, por parte da referida autarquia, incentivo ou recomendação e sua comercialização.
+                        </p>
+
+                        <p className="ml-5">
+                        No portal da SUSEP podem ser conferidas todas as informações sobre o(s) plano(s) de seguro do bilhete contratado através do link http://www.susep.gov.br/menu/servicos-ao-cidadao/sistema-de-consulta-publica-de-produtos.
+                        </p>
+
+                        <p>
+                        Atendimento ao público da SUSEP 0800 021 84 84 (dias úteis, das 9:30 às 17:00).
+                        </p>
+                        <p>
+                        SAC: 0800 942 04 62 ou 51 3191 7318 (segunda à sexta-feira das 10h às 16h), Ouvidoria: 0800 232 22 22 (segunda à sexta-feira das 10h às 16h) ou Acesse: <a href="https://www.factaseguradora.com.br" target="_blank" rel="noopener noreferrer">https://www.factaseguradora.com.br</a>
+                        </p>
+
+                      </ModalBody>
+                      <ModalFooter>
+                        <Button className="btn-block font-weight-bold mt-2" color="outline-secondary" onClick={this.toggleModalSeguro}>Fechar</Button>
+                      </ModalFooter>
+                      </Modal>
+
           </>
         : <PaginaMensagemLocalizacao />
         )

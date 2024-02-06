@@ -86,6 +86,9 @@ class CedulaFactaTesouro extends Component {
       var _state = this.props.location.state;
       var PRINCIPAL;
       var DADOS_STATE_TERMO;
+
+      console.log('DADOS_STATE_TERMO');
+      console.log(_state.DADOS_STATE_TERMO)
       if (this.state.tipoPendencia == "normal") {
         PRINCIPAL = _state.DADOS_STATE_TERMO.DADOS_PROPOSTA_DIGITAL;
         DADOS_STATE_TERMO = _state.DADOS_STATE_TERMO;
@@ -94,6 +97,9 @@ class CedulaFactaTesouro extends Component {
         PRINCIPAL = _state.obj_pendencias;
       }
 
+      console.log('chegue aqui')
+      console.log(PRINCIPAL)
+      console.log(PRINCIPAL.BANCO)
       this.state.obj_proposta   = PRINCIPAL;
       this.state.obj_vinculadas = PRINCIPAL.PROPOSTA_VINCULADA;
       this.state.obj_corretor   = PRINCIPAL.CORRETOR;
@@ -451,7 +457,7 @@ class CedulaFactaTesouro extends Component {
                             </Col>
                           </Row>
 
-                          { [13, 14, 17, 18, 27].indexOf(COD_TP_OPERACAO) !== -1
+                          { [13, 14, 17, 18, 27, 43 , 44].indexOf(COD_TP_OPERACAO) !== -1
                             ? <Row>
                                 <Col xs="12" sm="12" xm="12">
                                   <label>Seguro Prestamista Proposta { CODIGO }</label>

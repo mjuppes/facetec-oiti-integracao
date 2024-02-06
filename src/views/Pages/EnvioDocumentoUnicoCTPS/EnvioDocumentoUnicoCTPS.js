@@ -39,7 +39,8 @@ class EnvioDocumentoUnicoCTPS extends Component {
         responseScore: false,
         responseProcess: false,
         retProcesso: false,
-        isScoreExcep: false
+        isScoreExcep: false,
+        cameraPromised : ''
       };
 
       if(this.props.isPendencia != 'S') {
@@ -65,8 +66,8 @@ showMessageErrorUnico = (message) => {
   this.setState({showCamera: false, errorUnico:  true, modalDados : true, msgErroUnico: message});
 }
 
-setDocumentoUnico = async (imagem) => {
-  this.setState({loadSpinner : true,  imagem : imagem, showCamera : false });
+setDocumentoUnico = async (imagem, cameraPromised) => {
+  this.setState({loadSpinner : true,  imagem : imagem, showCamera : false , cameraPromised : cameraPromised});
 
   if (this.props.ctps == 'CTPS_VERSO') {
 
@@ -210,6 +211,12 @@ buscaScoreUnico = async (codigoAF, id_unico) => {
   return this.state.responseScore;
 }
 
+
+removeDoc = () => {
+  this.setState({errorUnico : false, showCamera : true, errorOCR : false, sucessUnico : false})
+}
+
+
 render() {
         const containerStyle = {
             "width": "400px",
@@ -246,13 +253,14 @@ render() {
                       tipoDocumento = {this.props.ctps}
                       showMessageErrorUnico = {this.showMessageErrorUnico}
                       setDocumentoUnico = {this.setDocumentoUnico}
+                      cameraPromised = {this.state.cameraPromised}
                     />
                   }
 
                   {(this.state.errorUnico  === true) &&
                     <Col xs="12">
                       <Modal isOpen={this.state.modalDados} toggle={this.modalDados} className='modal-primary modal-dialog-centered' style={{'zIndex' : 9999}}>
-                          <ModalHeader toggle={this.toggleMdlDados} onClick={this.props.onClick}>Atenção</ModalHeader>
+                          <ModalHeader toggle={this.toggleMdlDados} onClick={() => this.removeDoc()}>Atenção</ModalHeader>
                           <ModalBody>
                             <Row className="mt-1">
                               <Col md="2" lg="2" xl="2" xs="2" sm="2" className="d-flex justify-content-center">
@@ -264,7 +272,7 @@ render() {
                             </Row>
                             <Row className="mt-1">
                               <Col md="12" lg="12" xl="12" xs="12" sm="12" className="text-center">
-                                <Button color="success" onClick={this.props.onClick}>Ok</Button>
+                                <Button color="success" onClick={() => this.removeDoc()}>Ok</Button>
                               </Col>
                             </Row>
                           </ModalBody>
@@ -310,7 +318,7 @@ render() {
                               {(this.props.etapaFinalizar === false  && this.props.isAnalfabetoEnvDoc === false) &&
                               <Col className="text-center" md="12" lg="12" xl="12" xs="12" sm="12">
                                   <Button className="btn btn-outline-primary btn-block btn-lg font-weight-bold mt-2" color="outline-danger" 
-                                    onClick={this.props.onClick}><i className="fa fa-trash"></i> 
+                                    onClick={() => this.removeDoc()}><i className="fa fa-trash"></i> 
                                       Remover
                                   </Button>
 
@@ -325,7 +333,7 @@ render() {
 
                               {(this.props.etapaFinalizar === true && this.props.isFgtsAux === true && this.props.analfabeto != 'S') &&
                                   <Col className="text-center" md="12" lg="12" xl="12" xs="12" sm="12">
-                                    <Button className="btn btn-outline-primary btn-block btn-lg font-weight-bold mt-2" color="outline-danger" onClick={this.props.onClick}><i className="fa fa-trash"></i> 
+                                    <Button className="btn btn-outline-primary btn-block btn-lg font-weight-bold mt-2" color="outline-danger" onClick={() => this.removeDoc()}><i className="fa fa-trash"></i> 
                                     Remover
                                     </Button>
 
@@ -338,7 +346,7 @@ render() {
                               }
                               {(this.props.isFgtsAux === false || this.props.analfabeto === 'S') && // colocar a condicao para o OITI
                                   <Col className="text-center" md="12" lg="12" xl="12" xs="12" sm="12">
-                                      <Button className="btn btn-outline-primary btn-block btn-lg font-weight-bold mt-2" color="outline-danger" onClick={this.props.onClick}><i className="fa fa-trash"></i> 
+                                      <Button className="btn btn-outline-primary btn-block btn-lg font-weight-bold mt-2" color="outline-danger" onClick={() => this.removeDoc()}><i className="fa fa-trash"></i> 
                                       Remover
                                       </Button>
 

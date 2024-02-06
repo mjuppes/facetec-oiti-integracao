@@ -1,7 +1,9 @@
 import { drawContour } from 'face-api.js/build/commonjs/draw';
 import React, { Component } from 'react';
+import { Col, Row, Button, Modal, ModalBody, ModalHeader } from 'reactstrap';
 import { UnicoCheckBuilder, SelfieCameraTypes, UnicoThemeBuilder,DocumentCameraTypes } from "unico-webframe";
 import Spinner from '../../Spinner';
+
 
 class CameraUnico extends Component {
 
@@ -9,17 +11,87 @@ class CameraUnico extends Component {
       super(props);
 
       this.state = {
-        loadSpinner: false
+        loadSpinner: false,
+        cameraPromised : '',
       }
     }
 
+    showMessageErrorUnicoModal = (message, cameraPromised) => {
+      this.setState({errorUnico : true, modalDados : true, msgErroUnico : message, cameraPromised : cameraPromised, mensagem : '', loadSpinner : false});
+    }
+
+    preparedCameraLoad = (cameraPromised) => {
+      let showMessageErrorUnico = this.props.showMessageErrorUnico.bind(this);
+      let showMessageErrorUnicoModal = this.showMessageErrorUnicoModal.bind(this);
+      this.setState({errorUnico : false});
+
+      let callback = "";
+
+      console.log('this.props.tipoDocumento')
+      console.log(this.props.tipoDocumento);
+
+      if(this.props.tipoDocumento === 'SELFIE') {
+            this.setState({ loadSpinner: true, mensagem: 'Carregando aguarde...' });
+
+            let getImagemUnico = this.props.getImagemUnico.bind(this);
+
+            callback = {
+              on: {
+                success: function(result) {
+                  getImagemUnico(result, cameraPromised);
+                },
+                error: function(error) {
+                  showMessageErrorUnicoModal('Erro ao tirar Selfie verifique seu dispositivo!!', cameraPromised);
+                }
+              }
+            }
+
+          const timeoutMs = 60000; // Defina o tempo limite em milissegundos (por exemplo, 10 segundos)
+
+          // Inicie o tempo limite com setTimeout
+          const timeoutId = setTimeout(() => {
+            showMessageErrorUnicoModal('Tempo limite excedido tente novamente daqui a alguns minutos.', cameraPromised);
+          }, timeoutMs);
+
+
+            cameraPromised.then(cameraOpener => {
+              // Limpe o tempo limite se a câmera estiver pronta antes do tempo limite expirar
+              clearTimeout(timeoutId);
+            
+              // A câmera está pronta, você pode abri-la aqui
+              cameraOpener.open(callback);
+            })
+            .catch(error => {
+              // Trate outros erros aqui, se houver algum
+              showMessageErrorUnico('Erro ao preparar a câmera.', cameraPromised);
+            });
+
+      } else {
+            let setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
+
+            callback = {
+              on: {
+                success: function(result) {
+                  setDocumentoUnico(result.base64, cameraPromised);
+                },
+                error: function(error) {
+                  showMessageErrorUnicoModal(error.message+"!", cameraPromised);
+                }
+              }
+            }
+
+            cameraPromised.then(cameraOpener => cameraOpener.open(callback));
+      }
+    }
+
+  
+
     componentDidMount() {
-      let unicoCameraBuilder = new UnicoCheckBuilder();
-      let public_url  = process.env.PUBLIC_URL;
+      const unicoCameraBuilder = new UnicoCheckBuilder();
+      const public_url  = process.env.PUBLIC_URL;
 
       unicoCameraBuilder.setResourceDirectory(public_url + "/resources");
 
-      console.log(public_url + "/resources");
 
       const unicoTheme = new UnicoThemeBuilder().setColorSilhouetteSuccess("#0384fc")
       .setColorSilhouetteError("#D50000").setColorSilhouetteNeutral("#fcfcfc")
@@ -30,313 +102,44 @@ class CameraUnico extends Component {
 
       unicoCameraBuilder.setTheme(unicoTheme);
 
-      let callback          = "";
-      let cameraPromised    = "";
-      let setDocumentoUnico = "";
-
-      let url = window.location.protocol + "//" + window.location.host + public_url + "/models";
+      const url = window.location.protocol + "//" + window.location.host + public_url + "/models";
       unicoCameraBuilder.setModelsPath(url);
 
-      let unicoCamera = unicoCameraBuilder.build();
-      let showMessageErrorUnico = this.props.showMessageErrorUnico.bind(this);
+      const unicoCamera = unicoCameraBuilder.build();
 
-      switch (this.props.tipoDocumento) {
-        case 'SELFIE': 
-            this.setState({ loadSpinner: true, mensagem: 'Carregando aguarde...' });
+      let cameraPromised = "";
+      //alert(this.props.cameraPromised);
 
-            cameraPromised = unicoCamera.prepareSelfieCamera(public_url + "/services.json",SelfieCameraTypes.SMART);
-            let getImagemUnico = this.props.getImagemUnico.bind(this);
+      if(this.props.cameraPromised === '') {
+         const tipoDocumentoMappings = {
+            SELFIE: SelfieCameraTypes.SMART,
+            CNH: DocumentCameraTypes.CNH,
+            FRENTE: DocumentCameraTypes.RG_FRENTE,
+            VERSO: DocumentCameraTypes.RG_VERSO,
+            FRENTE_NOVO: DocumentCameraTypes.RG_FRENTE_NOVO,
+            VERSO_NOVO: DocumentCameraTypes.RG_VERSO_NOVO,
+            CTPS_FRENTE: DocumentCameraTypes.OTHERS("CARTEIRA DE TRABALHO FRENTE"),
+            CTPS_VERSO: DocumentCameraTypes.OTHERS("CARTEIRA DE TRABALHO VERSO"),
+            EXTRATO: DocumentCameraTypes.OTHERS("EXTRATO"),
+            COMPRENDA: DocumentCameraTypes.OTHERS("COMPROVANTE DE RENDA"),
+            COMPRESID: DocumentCameraTypes.OTHERS("COMPROVANTE DE RESIDÊNCIA"),
+            CADOPTANTE: DocumentCameraTypes.OTHERS("CADASTRO OPTANTE"),
+            CONTRACHEQUE: DocumentCameraTypes.OTHERS("CONTRA CHEQUE"),
+            RNE_FRENTE: DocumentCameraTypes.OTHERS("RNE FRENTE"),
+            RNE_VERSO: DocumentCameraTypes.OTHERS("RNE VERSO"),
+            CIM_FRENTE: DocumentCameraTypes.OTHERS("CARTEIRA DE IDENTIDADE MILITAR FRENTE"),
+            CIM_VERSO: DocumentCameraTypes.OTHERS("CARTEIRA DE IDENTIDADE MILITAR VERSO"),
+        };
 
-            callback = {
-              on: {
-                success: function(result) {
-                  getImagemUnico(result);
-                },
-                error: function(error) {
-                  showMessageErrorUnico('Erro ao tirar Selfie verifique seu dispositivo!!');
-                }
-              }
-            }
+        const cameraType = tipoDocumentoMappings[this.props.tipoDocumento] || null ;
+        cameraPromised =  unicoCamera.prepareSelfieCamera(public_url + "/services.json",cameraType);
+      } else {
+        cameraPromised = this.props.cameraPromised;
+      }
 
-            cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-          break;
-        case 'CNH':
-            cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.CNH);
-            setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-
-            callback = {
-              on: {
-                success: function(result) {
-                  setDocumentoUnico(result.base64);
-                },
-                error: function(error) {
-                  showMessageErrorUnico(error.message);
-                }
-              }
-            }
-
-            cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-          break;
-        case 'FRENTE':
-            cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.RG_FRENTE);
-            setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-
-            callback = {
-              on: {
-                success: function(result) {
-                  setDocumentoUnico(result.base64);
-                },
-                error: function(error) {
-                  showMessageErrorUnico(error.message);
-                }
-              }
-            }
-
-            cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-          break;
-        case 'VERSO':
-            cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.RG_VERSO);
-            setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-
-            callback = {
-              on: {
-                success: function(result) {
-                  setDocumentoUnico(result.base64);
-                },
-                error: function(error) {
-                  showMessageErrorUnico(error.message);
-                }
-              }
-            }
-
-            cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-          break;
-          case 'FRENTE_NOVO':
-            cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.RG_FRENTE_NOVO);
-            setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-
-            callback = {
-              on: {
-                success: function(result) {
-                  setDocumentoUnico(result.base64);
-                },
-                error: function(error) {
-                  showMessageErrorUnico(error.message);
-                }
-              }
-            }
-
-            cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-          break;
-          case 'VERSO_NOVO':
-            cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.RG_VERSO_NOVO);
-            setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-
-            callback = {
-              on: {
-                success: function(result) {
-                   setDocumentoUnico(result.base64);
-                },
-                error: function(error) {
-                  showMessageErrorUnico(error.message);
-                }
-              }
-            }
-
-            cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-          break;
-        case 'CTPS_FRENTE':
-          cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.OTHERS("CARTEIRA DE TRABALHO FRENTE"));
-          setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-
-          callback = {
-            on: {
-              success: function(result) {
-                setDocumentoUnico(result.base64);
-              },
-              error: function(error) {
-                showMessageErrorUnico(error.message);
-              }
-            }
-          }
-
-          cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-          break;
-        case 'CTPS_VERSO':
-          cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.OTHERS("CARTEIRA DE TRABALHO VERSO"));
-          setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-
-          callback = {
-            on: {
-              success: function(result) {
-                setDocumentoUnico(result.base64);
-              },
-              error: function(error) {
-                showMessageErrorUnico(error.message);
-              }
-            }
-          }
-
-          cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-          break;  
-        case 'EXTRATO':
-          cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.OTHERS("EXTRATO"));
-          setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-
-          callback = {
-            on: {
-              success: function(result) {
-                setDocumentoUnico(result.base64);
-              },
-              error: function(error) {
-                showMessageErrorUnico(error.message);
-              }
-            }
-          }
-
-          cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-          break;
-        case 'COMPRENDA':
-            cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.OTHERS("COMPROVANTE DE RENDA"));
-            setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-  
-            callback = {
-              on: {
-                success: function(result) {
-                  setDocumentoUnico(result.base64);
-                },
-                error: function(error) {
-                  showMessageErrorUnico(error.message);
-                }
-              }
-            }
-  
-            cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-            break;
-        case 'COMPRESID':
-            cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.OTHERS("COMPROVANTE DE RESIDÊNCIA"));
-            setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-  
-            callback = {
-              on: {
-                success: function(result) {
-                  setDocumentoUnico(result.base64);
-                },
-                error: function(error) {
-                  showMessageErrorUnico(error.message);
-                }
-              }
-            }
-  
-            cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-            break;  
-        case 'CADOPTANTE':
-              cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.OTHERS("CADASTRO OPTANTE"));
-              setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-    
-              callback = {
-                on: {
-                  success: function(result) {
-                    setDocumentoUnico(result.base64);
-                  },
-                  error: function(error) {
-                    showMessageErrorUnico(error.message);
-                  }
-                }
-              }
-    
-              cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-              break;  
-        case 'CONTRACHEQUE':
-              cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.OTHERS("CONTRA CHEQUE"));
-              setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-
-              callback = {
-                on: {
-                  success: function(result) {
-                    setDocumentoUnico(result.base64);
-                  },
-                  error: function(error) {
-                    showMessageErrorUnico(error.message);
-                  }
-                }
-              }
-
-              cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-          break;
-          case 'RNE_FRENTE':
-              cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.OTHERS("RNE FRENTE"));
-              setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-
-              callback = {
-                on: {
-                  success: function(result) {
-                    setDocumentoUnico(result.base64);
-                  },
-                  error: function(error) {
-                    showMessageErrorUnico(error.message);
-                  }
-                }
-              }
-
-              cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-          break;  
-
-          case 'RNE_VERSO':
-              cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.OTHERS("RNE VERSO"));
-              setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-
-              callback = {
-                on: {
-                  success: function(result) {
-                    setDocumentoUnico(result.base64);
-                  },
-                  error: function(error) {
-                    showMessageErrorUnico(error.message);
-                  }
-                }
-              }
-
-              cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-          break;  
-          case 'CIM_FRENTE':
-            cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.OTHERS("CARTEIRA DE INDENTIDADE MILITAR FRENTE"));
-            setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-  
-            callback = {
-              on: {
-                success: function(result) {
-                  setDocumentoUnico(result.base64);
-                },
-                error: function(error) {
-                  showMessageErrorUnico(error.message);
-                }
-              }
-            }
-  
-            cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-            break;
-          case 'CIM_VERSO':
-            cameraPromised = unicoCamera.prepareDocumentCamera(public_url + "/services.json", DocumentCameraTypes.OTHERS("CARTEIRA DE INDENTIDADE MILITAR VERSO"));
-            setDocumentoUnico = this.props.setDocumentoUnico.bind(this);
-  
-            callback = {
-              on: {
-                success: function(result) {
-                  setDocumentoUnico(result.base64);
-                },
-                error: function(error) {
-                  showMessageErrorUnico(error.message);
-                }
-              }
-            }
-  
-            cameraPromised.then(cameraOpener => cameraOpener.open(callback));
-            break;  
+      this.preparedCameraLoad(cameraPromised);
     }
-      
-      
-    }
+
 
     render() {
       const containerStyle = {
@@ -348,8 +151,6 @@ class CameraUnico extends Component {
       'margin-top' : '50%',
     };
 
-
-
     return (
       <div>
         {this.state.loadSpinner  === true &&
@@ -358,6 +159,29 @@ class CameraUnico extends Component {
             mensagem = {this.state.mensagem}
             />
           </div>
+        }
+
+        {this.state.errorUnico === true &&
+          <Col xs="12">
+            <Modal isOpen={this.state.modalDados} toggle={this.modalDados} className='modal-primary modal-dialog-centered' style={{'zIndex' : 9999}}>
+                <ModalHeader toggle={this.toggleMdlDados} onClick={this.props.onClick}>Atenção</ModalHeader>
+                <ModalBody>
+                  <Row className="mt-1">
+                    <Col md="2" lg="2" xl="2" xs="2" sm="2" className="d-flex justify-content-center">
+                      <i className="fa fa-times-circle-o align-self-center h2"></i>
+                    </Col>
+                    <Col md="10" lg="10" xl="10" xs="10" sm="10" className="text-left pl-0">
+                      <p className="align-self-center">{this.state.msgErroUnico}</p>
+                    </Col>
+                  </Row>
+                  <Row className="mt-1">
+                    <Col md="12" lg="12" xl="12" xs="12" sm="12" className="text-center">
+                      <Button color="success" onClick={() => this.preparedCameraLoad(this.state.cameraPromised)}>Clique Aqui</Button>
+                    </Col>                                    
+                  </Row>
+                </ModalBody>
+              </Modal>
+          </Col>
         }
 
         <div style={containerStyle}>

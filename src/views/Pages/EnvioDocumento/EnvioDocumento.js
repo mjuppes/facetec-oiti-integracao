@@ -17,13 +17,14 @@ class EnvioDocumento extends Component {
         loadSpinner: false,
         msgErroUnico: '',
         sucessUnico: false,
-        errorProcessoUnico: false
+        errorProcessoUnico: false,
+        cameraPromised : ''
       };
 
     }
 
-    setDocumentoUnico = (imagem) => {
-      this.setState({ imagem : imagem, showCamera : false, sucessUnico: true });
+    setDocumentoUnico = (imagem, cameraPromised) => {
+      this.setState({ imagem : imagem, showCamera : false, sucessUnico: true , cameraPromised : cameraPromised});
 
       if(this.props.showBtnnewExtract === true) { //adiciona no array
         this.props.addImagemExtrato(this.state.imagem);
@@ -37,6 +38,15 @@ class EnvioDocumento extends Component {
     toggleMdlDados = () => {
       (this.state.modalDados === false) ? this.setState({modalDados: true}) : this.setState({modalDados: false}); 
     }
+
+    closeModal = () => {
+      this.setState({errorUnico : false, showCamera : true, sucessUnico : false})
+    }
+
+    newExtract = () => {
+      this.setState({showCamera : true, sucessUnico : false});
+    }
+
 
     render() {
             const containerStyle = {
@@ -74,6 +84,7 @@ class EnvioDocumento extends Component {
                           tipoDocumento = {this.props.tipo}
                           showMessageErrorUnico = {this.showMessageErrorUnico}
                           setDocumentoUnico = {this.setDocumentoUnico}
+                          cameraPromised = {this.state.cameraPromised}
                       />
                       }
 
@@ -92,7 +103,7 @@ class EnvioDocumento extends Component {
                                 </Row>
                                 <Row className="mt-1">
                                   <Col md="12" lg="12" xl="12" xs="12" sm="12" className="text-center">
-                                    <Button color="success" onClick={this.props.onClick}>Ok</Button>
+                                    <Button color="success" onClick={() => this.closeModal()}>Ok</Button>
                                   </Col>
                                 </Row>
                               </ModalBody>
@@ -139,7 +150,7 @@ class EnvioDocumento extends Component {
                                 {(this.props.showBtnnewExtract === true ) && 
                                   <div>
                                     <Button className="btn btn-outline-success btn-block btn-lg font-weight-bold mt-2" color="outline-success" /*onClick={this.props.showBtnNewExtract()}*/ 
-                                      onClick={() => this.props.newExtract()} 
+                                      onClick={() => this.newExtract()} 
                                       to="#" > 
                                       <i className="fa fa-plus"></i> Adicionar nova foto
 
@@ -152,7 +163,7 @@ class EnvioDocumento extends Component {
 
                                 }
                                 {(this.props.showBtnnewExtract !== true ) && 
-                                  <Button className="btn btn-outline-primary btn-block btn-lg font-weight-bold mt-2" color="outline-danger" onClick={this.props.onClick}> <i className="fa fa-trash"></i> 
+                                  <Button className="btn btn-outline-primary btn-block btn-lg font-weight-bold mt-2" color="outline-danger" onClick={() => this.closeModal()}> <i className="fa fa-trash"></i> 
                                     Remover
                                   </Button>
                                 }

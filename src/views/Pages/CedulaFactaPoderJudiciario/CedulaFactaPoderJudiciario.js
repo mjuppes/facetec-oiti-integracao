@@ -813,7 +813,7 @@ class CedulaFactaPoderJudiciario extends Component {
                             </Col>
                           </Row>
 
-                          { [13, 14, 17, 18, 27].indexOf(COD_TP_OPERACAO) !== -1
+                          { [13, 14, 17, 18, 27, 43, 44].indexOf(COD_TP_OPERACAO) !== -1
                             ? <Row>
                                 <Col xs="12" sm="12" xm="12">
                                   <label>Seguro Prestamista Proposta { CODIGO }</label>

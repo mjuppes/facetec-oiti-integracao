@@ -139,17 +139,28 @@ class Conclusao extends Component {
                         
                           <Col xs="12" sm="12">
                             <h5 className="mb-3 font-weight-bold">Conclusão da Assinatura Digital</h5>
-                            <p className="text-muted">Parabéns! Sua proposta foi formalizada e aguarda a análise da nossa equipe.</p>
+                            <p className="text-muted">PRONTO! Sua assinatura foi concluída com sucesso e aguarda a análise da nossa equipe.</p>
                             <p className="text-muted">Em breve você será notificado sobre o andamento da proposta.</p>
+                            <p className="text-muted">Você pode acompanhar o andamento de sua proposta pelo link: </p>
+                            <p className="text-muted">
+                              <a target="_blank" rel="noopener noreferrer" href={"https://sac.factafinanceira.com.br"}>
+                                  sac.factafinanceira.com.br
+                                </a> 
+                            </p>
                           </Col>
                       }
                       {this.state.dadosProposta.Averbador === 20095 &&
                           <Col xs="12" sm="12">
                             <h5 className="mb-3 font-weight-bold">Conclusão da Assinatura Digital</h5>
-                            <p className="text-muted">Parabéns! Sua proposta foi formalizada e aguarda a análise da nossa equipe.</p>
+                            <p className="text-muted">PRONTO! Sua assinatura foi concluída com sucesso e aguarda a análise da nossa equipe.</p>
                             <p className="text-muted">Agora acompanhe o andamento de sua solicitação, pois ela é sujeita a análise de crédito e poderá demorar até
                             <font className="font-weight-bold"> 48 hrs</font> para aprovação.</p>
-                            <p className="text-muted">Em breve você será notificado sobre o andamento da proposta.</p>
+                            <p className="text-muted">Você pode acompanhar o andamento de sua proposta pelo link: </p>
+                            <p className="text-muted">
+                              <a target="_blank" rel="noopener noreferrer" href={"https://sac.factafinanceira.com.br"}>
+                                  sac.factafinanceira.com.br
+                                </a> 
+                            </p>
                           </Col>
                       }
                       </Row>
@@ -185,35 +196,12 @@ class Conclusao extends Component {
                           <>
                             <Row className="mt-3">
                               <Col xs="12" sm="12">
-                                <p className="font-weight-bold m-3">Para fazer o download da CCB, clique na proposta desejada:</p>
-                                 {(DADOS_AF.Tipo_Operacao === 11 || DADOS_AF.Tipo_Operacao === 29 || DADOS_AF.Tipo_Operacao === 33 || DADOS_AF.Tipo_Operacao === 36 || DADOS_AF.Tipo_Operacao === 35 || DADOS_AF.Tipo_Operacao === 37  || DADOS_AF.Tipo_Operacao === 38) ? <>
-                                    <p>
-
-                                      {(DADOS_AF.Tipo_Operacao === 35 || DADOS_AF.Tipo_Operacao === 37) &&
-                                        <a target="_blank" rel="noopener noreferrer" href={"https://app.factafinanceira.com.br/gerador_pdf/gerar_ccb_rl.php?token=" + token_ccb + "&codigo=" + this.state.codigoAF64+"&tipo=1" } className="btn btn-outline-primary btn-block btn-lg">
-                                          <i className="fa fa-download" aria-hidden="true"></i> Proposta Nº { this.state.codigoAF }
-                                        </a>
-                                      }
-
-                                      {(DADOS_AF.Tipo_Operacao === 33 || DADOS_AF.Tipo_Operacao === 36 || DADOS_AF.Tipo_Operacao === 38) &&
-                                        <a target="_blank" rel="noopener noreferrer" href={"https://app.factafinanceira.com.br/gerador_pdf/gerar_formulario_ccb_credito_consignado_beneficio.php?token=" + token_ccb + "&codigoaf=" + this.state.codigoAF64 } className="btn btn-outline-primary btn-block btn-lg">
-                                          <i className="fa fa-download" aria-hidden="true"></i> Proposta Nº { this.state.codigoAF }
-                                        </a>
-                                      }
-                                      {(DADOS_AF.Tipo_Operacao !== 33 && DADOS_AF.Tipo_Operacao !== 36 && DADOS_AF.Tipo_Operacao !== 35 && DADOS_AF.Tipo_Operacao !== 37 && DADOS_AF.Tipo_Operacao !== 38) &&
-                                        <a target="_blank" rel="noopener noreferrer" href={"https://app.factafinanceira.com.br/gerador_pdf/gerar_formulario_ccb_credito.php?token=" + token_ccb_credito + "&codigoaf=" + this.state.codigoAF64 } className="btn btn-outline-primary btn-block btn-lg">
-                                          <i className="fa fa-download" aria-hidden="true"></i> Proposta Nº { this.state.codigoAF }
-                                        </a>
-                                      }
-
-                                    </p> 
-                                  </> : 
-                                    <p>
-                                        <a target="_blank" rel="noopener noreferrer" href={"https://app.factafinanceira.com.br/gerador_pdf/gerar_ccb.php?tipo_ccb="+ tipo_ccb +"&token=" + token_ccb + "&tipo=1&codigo=" + this.state.codigoAF64 } className="btn btn-outline-primary btn-block btn-lg">
-                                          <i className="fa fa-download" aria-hidden="true"></i> Proposta Nº { this.state.codigoAF }
-                                        </a>
-                                    </p>
-                                 }
+                                <p className="font-weight-bold m-3">Para fazer o download da CCB, clique na proposta desejada:</p> 
+                                <p>
+                                  <a target="_blank" rel="noopener noreferrer" href={"https://ccbs.factafinanceira.com.br/validador.php?token=" + token_ccb + "&codigo=" + this.state.codigoAF64 + "&tipo_operacao=" + DADOS_AF.Tipo_Operacao + "&averbador=" + DADOS_AF.Averbador } className="btn btn-outline-primary btn-block btn-lg">
+                                    <i className="fa fa-download" aria-hidden="true"></i> Proposta Nº { this.state.codigoAF }
+                                  </a>  
+                                </p> 
                              </Col>
                            </Row>
                            { DADOS_AF.PROPOSTA_VINCULADA !== undefined
@@ -225,7 +213,7 @@ class Conclusao extends Component {
                                         <Row className="mt-3">
                                           <Col xs="12" sm="12">
                   													<p>
-                                              <a target="_blank" rel="noopener noreferrer" href={"https://app.factafinanceira.com.br/gerador_pdf/gerar_ccb.php?tipo_ccb="+ tipo_ccb +"&token=" + token_ccb + "&tipo=1&codigo=" + btoa(vinc.CODIGO)} className="btn btn-outline-primary btn-block btn-lg">
+                                              <a target="_blank" rel="noopener noreferrer" href={"https://ccbs.factafinanceira.com.br/validador.php?token=" + token_ccb + "&codigo=" + btoa(vinc.CODIGO) + "&tipo_operacao=" + DADOS_AF.Tipo_Operacao + "&averbador=" + DADOS_AF.Averbador } className="btn btn-outline-primary btn-block btn-lg">
                   															<i className="fa fa-download" aria-hidden="true"></i> Proposta Nº { vinc.CODIGO }
                   														</a>
                   													</p>

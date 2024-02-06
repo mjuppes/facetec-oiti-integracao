@@ -15,7 +15,7 @@ import DadosDoClienteTemplate from '../../../DadosDoClienteTemplate';
 import DadosDoCorretorTemplate from '../../../DadosDoCorretorTemplate';
 import TimelineProgresso from '../../TimelineProgresso';
 
-class CedulaFactaPrfPoa extends Component {
+class CedulaFactaPrevimpa extends Component {
 
  constructor(props) {
   super(props);
@@ -131,12 +131,8 @@ class CedulaFactaPrfPoa extends Component {
     }
    }
    else {
-     if (parseInt(this.state.tipoOperacao.Codigo) === 33 || parseInt(this.state.tipoOperacao.Codigo) === 45) {
-      this.state.proximoLink = '/facta-inss-seguro/'+this.props.match.params.propostaId;
-    } else {
-      this.state.proximoLink = '/declaracao-de-residencia/'+this.props.match.params.propostaId;
-    }
-
+     //this.state.proximoLink = '/tipo-documento/'+this.props.match.params.propostaId; // Rota antiga para já tirar foto dos DOCS
+     this.state.proximoLink = '/declaracao-de-residencia/'+this.props.match.params.propostaId;
    }
 
  }
@@ -618,8 +614,6 @@ class CedulaFactaPrfPoa extends Component {
           )) : ( null )
          }
 
-      {COD_TP_OPERACAO !== 11 && COD_TP_OPERACAO !== 33 ? (
-
          <Card className="border-white shadow" style={{borderRadius: '8px'}}>
           <CardBody className="text-left pb-5">
            <h5 className="text-center border-bottom border-light pb-3">CLÁUSULAS E CONDIÇÕES</h5>
@@ -674,151 +668,6 @@ class CedulaFactaPrfPoa extends Component {
            </Row>
           </CardBody>
          </Card>
-
-        ) : (
-          <>
-              <Card className="border-white shadow" style={{borderRadius: '8px'}} id="bloco_DadosDaCcb">
-              <CardBody className="text-left">
-                <h5 className="text-center border-bottom border-light pb-3">PROPOSTA DE ADESÃO</h5>
-                <Row className="text-justify">
-                  <Col xs="12" sm="12" xm="12">
-
-                    <p>
-                        1. A FACTA compromete-se a entregar ao CLIENTE um CARTÃO DE CRÉDITO, por meio do qual poderá realizar compras parceladas ou saques.
-                    </p>
-                    <p>
-                        2. Inicialmente, será entregue ao CLIENTE um número correspondente a um CARTÃO virtual. Se requerido pelo CLIENTE, será emitido CARTÃO de plástico com o respectivo envio ao endereço cadastrado no quadro III ou retirado na loja onde foi contraído o financiamento.
-                    </p>
-                    <p>
-                        3. O CLIENTE permite que o adimplemento das faturas ocorra mediante consignação em folha de
-                        pagamento, de forma irrevogável e irretratável, dessa forma:
-                    </p>
-                    <p>
-                        (i) Em caso de liquidação espontânea, sem ter havido qualquer ato de cobrança, não será devolvido nenhum tipo de ressarcimento de custo;
-                    </p>
-                    <p>
-                        (ii) DECLARA que possui margem consignável disponível, bem como detém ciência de que eventuais valores que sobejarem a margem consignável deverão ser pagos por meio da fatura emitida pela FACTA, e;
-                    </p>
-                    <p>
-                        (iii) SOLICITA que sua Fonte Pagadora faça o repasse dos valores descontados dos vencimentos
-                            diretamente à FACTA sempre em nome do próprio CLIENTE, garantindo o abatimento desse valor do total
-                            da fatura. A presente autorização é, sendo o caso, extensível ao Instituto Nacional do Seguro Social –
-                            INSS, na qualidade de Fonte Pagadora, conforme preceitua a legislação vigente.
-                    </p>
-                    <p>
-                        4. Em caso de mora no pagamento de quaisquer valores devidos nos termos desta Cédula, inclusive
-                            principal ou juros, sem prejuízo do disposto nas demais cláusulas da presente, incidirão sobre o saldo
-                            devedor devidamente atualizado os seguintes encargos:
-                    </p>
-                    <p>
-                        (I) juros de mora à razão de 1% (um por cento) ao mês ou fração de mês; 
-                    </p>
-                    <p>
-                        (II) multa não compensatória de 2% (dois por cento) sobre o montante dos débitos.
-                    </p>
-                    <p>
-                        5. No caso de atraso no pagamento das faturas, o valor devido será acrescido de juros remuneratórios
-                            capitalizados mensalmente à taxa de juros estabelecida na proposta, na quantidade de parcelas, valores,
-                            data de vencimento, bem como tributos e encargos especificados na Proposta.
-                    </p>
-                    <p>
-                        6. A assinatura do CLIENTE no Quadro VI opta pela modalidade de saque pelo cartão de crédito, que será
-                        efetuada mediante a transferência do valor liberado na conta corrente indicada no QUADRO V. Nestes
-                        casos, o CLIENTE tem ciência de todo Custo Total da Operação, que está definido no próprio QUADRO VI.
-                    </p>
-                    <p>
-                        7. O CLIENTE autoriza a FACTA a consultar o SCR do Bacen e as organizações de cadastros sobre seus
-                        débitos, bem como a divulgação dos seus dados e obrigações, inclusive cadastrais, para constarem nos
-                        bancos de dados do Serasa/SPC e outros, cuja finalidade será o compartilhamento com outras empresas,
-                        os quais serão utilizados para subsidiar decisões de crédito e negócios.
-                    </p>
-                    <p>
-                        8. O CLIENTE declara ter recebido a 2ª via desta Proposta e das Cláusulas Gerais do Contrato aderidas, e
-    ter tomado ciência, previamente à contratação da presente operação, dos fluxos considerados no cálculo do
-    CET.
-                    </p>
-                    <p>
-                        9. O CLIENTE, por meio desta proposta, adere integralmente às cláusulas constantes no Contrato de
-    Cartão de Crédito com Desconto Consignado registrado no Cartório de Registro de Títulos e Documentos
-    de Porto Alegre, sob n° 1685503.
-                    </p>
-                    <p>
-                    10. O CLIENTE declara, sob as penas da lei, que todas as informações prestadas na presente proposta,
-                        bem como todos os documentos apresentados são verdadeiros.
-                        Firmam as partes o presente em 02 vias, sendo a 1ª via da Financeira e a 2ª via do Creditado/Financiado.
-                    </p>
-                    <p>
-                    </p>
-                    <p>
-                    </p>
-
-                  </Col>
-                </Row>
-              </CardBody>
-              </Card>
-
-                          
-              <Card className="border-white shadow" style={{borderRadius: '8px'}} id="bloco_DadosDaCcb">
-              <CardBody className="text-left">
-                <h5 className="text-center border-bottom border-light pb-3">TERMO DE CONSENTIMENTO ESCLARECIDO DO CARTÃO DE CRÉDITO CONSIGNADO</h5>
-                <Row className="text-justify">
-                  <Col xs="12" sm="12" xm="12">
-
-                    <p>
-                      Em cumprimento à sentença judicial proferida nos autos da Ação Civil Pública n. 106890-28.2015.4.01.3700, 3ª Vara Federal da Seção Judiciária de São Luís/MA, proposta pela Defensoria Pública da União
-                    </p>
-                    <p>
-                    Eu, acima qualificado como titular do cartão de crédito consignado benefício contratado com Facta Financeira S.A. Crédito, Financiamento e Investimento, declaro para os devidos fins e sob as penas da lei, estar de ciente e de acordo que: 
-                    </p>
-
-                    <p>
-                        (i) Contratei um cartão de crédito consignado benefício; 
-                    </p>
-                    <p>
-                        (ii) Fui informado que a realização de saque mediante a utilização do meu limite do cartão de crédito consignado benefício ensejará a incidência de encargos e que o valor do saque, acrescido destes encargos, constará na minha próxima fatura do cartão; 
-                    </p>
-                    <p>
-                        (iii)     A diferença entre o valor pago mediante consignação (desconto realizado diretamente na remuneração/benefício) e o total da fatura poderá ser paga por meio da minha fatura mensal, o que é recomendado pela Facta Financeira, já que,
-                        caso a fatura não seja integralmente paga até data de vencimento, incidirão encargos sobre o valor devido, conforme previsto na fatura; 
-                    </p>
-                    <p>
-                        (iv)  declaro ainda saber que existem outras modalidades de crédito, a exemplo do empréstimo consignado, que possuem juros mensais em percentuais menores; 
-                    </p>
-                    <p>
-                        (v)   estou ciente de que a taxa de juros do cartão de crédito consignado benefício é inferior à taxa de juros do Cartão de Crédito convencional; 
-                    </p>
-                    <p>
-                        (vi)  Sendo utilizado o limite parcial ou total de meu cartão de crédito consignado benefício, para saques ou compras, em uma única transação, o 
-                        saldo devedor do cartão será liquidado até o termo final do prazo de {AF.NUMEROPRESTACAO} prestações, contados a partir da data do primeiro desconto em folha, DESDE QUE: (a) eu não realize outras transações de qualquer natureza, durante todo o período de amortização projetado a partir da última utilização; (b) não ocorra a redução/perda da minha margem consignável de cartão; (c) os descontos através da consignação ocorram mensalmente, sem interrupção, até o total da dívida; (d) eu não realize qualquer pagamento espontâneo via fatura; e (e) não haja alteração da taxa dos juros remuneratórios. Para tirar dúvidas acerca do Contrato ora firmado, inclusive sobre informações presentes neste Termo de Consentimento, o TITULAR poderá entrar em contato, gratuitamente, com o Facta Financeira S.A. Crédito, Financiamento e Investimento através do seguintes Canais de atendimento: E-mail: sac@factafinanceira.com.br Telefones: SAC 0800 942 0462 ou 51 3191-7318 Ouvidoria: 0800. 232. 22.22 Horário de atendimento: Segunda a Sexta das 10h às 16h. Site: www.factafinanceira.com.br. 
-                    </p>
-                    <p>
-                    </p>
-                    <p>
-                    </p>
-
-                  </Col>
-                </Row>
-                <Row className="mb-3 mt-3">
-                  <Col xs="12" sm="12">
-                      { this.state.clicou  ?
-                        <LayoutFactaCarregando />
-                      :
-                        <div>
-                          <Button className="btn-block font-weight-bold" color="outline-primary" size="lg" onClick={this.salvaImgCcb} disabled={this.state.clicou}>
-                               Eu <strong>li</strong> e <strong>aceito</strong> os termos
-                          </Button>
-                        </div>
-                      }
-                  </Col>
-                </Row>
-              </CardBody>
-              </Card>
-
-              </>
-
-        )}
-
-
         </Col>
        </Row>
 
@@ -832,4 +681,4 @@ class CedulaFactaPrfPoa extends Component {
  }
 }
 
-export default CedulaFactaPrfPoa;
+export default CedulaFactaPrevimpa;

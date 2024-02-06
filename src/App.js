@@ -24,12 +24,13 @@ const CedulaFactaIpe = React.lazy(() => import('./views/Pages/CedulaFactaIpe/Ced
 const CedulaFactaTesouro = React.lazy(() => import('./views/Pages/CedulaFactaTesouro/CedulaFactaTesouro'));
 const CedulaFactaMex = React.lazy(() => import('./views/Pages/CedulaFactaMex/CedulaFactaMex'));
 const CedulaFactaPrfPoa = React.lazy(() => import('./views/Pages/CedulaFactaPrfPoa/CedulaFactaPrfPoa'));
+const CedulaFactaPrevimpa = React.lazy(() => import('./views/Pages/CedulaFactaPrevimpa/CedulaFactaPrevimpa'));
 
 
 
 
 
-const FaceTecApiOiti = React.lazy(() => import('./views/Pages/FaceTecApiOiti/FaceTecApiOiti'));
+
 const DeclaracaoResidencia = React.lazy(() => import('./views/Pages/DeclaracaoResidencia/DeclaracaoResidencia')); // Página para envio de documento (RG ou CNH)
 
 const PropostaPendente = React.lazy(() => import('./views/Pages/PropostaPendente/PropostaPendente'));
@@ -67,10 +68,19 @@ const FactaFgtsCcb = React.lazy(() => import('./views/Pages/FactaFgts/FactaFgtsC
 
 
 const FactaSeguroInss = React.lazy(() => import('./views/Pages/Seguro/FactaSeguroInss')); 
+const FactaGovScSeguro = React.lazy(() => import('./views/Pages/Seguro/FactaGovScSeguro')); 
+const FactaGovPrSeguro = React.lazy(() => import('./views/Pages/Seguro/FactaGovPrSeguro')); 
+
 const FactaInssCartao = React.lazy(() => import('./views/Pages/CedulaFactaInss/CedulaFactaInssCartao')); 
 const FactaInssCartaoRepLegal = React.lazy(() => import('./views/Pages/CedulaFactaInss/CedulaFactaInssRepLegal')); 
 
 const CedulaFactaSiapeCartao = React.lazy(() => import('./views/Pages/CedulaFactaInss/CedulaFactaSiapeCartao')); 
+
+const CedulaFactaGovMg = React.lazy(() => import('./views/Pages/CedulaFactaGovMg/CedulaFactaGovMg')); 
+const CedulaFactaGovSc = React.lazy(() => import('./views/Pages/CedulaFactaGovSc/CedulaFactaGovSc')); 
+const CedulaFactaGovPr = React.lazy(() => import('./views/Pages/CedulaFactaGovPr/CedulaFactaGovPr')); 
+
+
 
 
 
@@ -86,7 +96,6 @@ class App extends Component {
           <React.Suspense fallback={loading()}>
             <Switch>
               <Route exact path="/" name="Login Page" render={props => <Login {...props}/>} />
-              <Route exact path="/teste-oiti" name="Teste Oiti" render={props => <FaceTecApiOiti {...props}/>} />
               <Route exact path="/login" name="Login Page" render={props => <Login {...props}/>} />
               <Route exact path="/register" name="Register Page" render={props => <Register {...props}/>} />
               <Route exact path="/404" name="Page 404" render={props => <Page404 {...props}/>} />
@@ -109,6 +118,8 @@ class App extends Component {
               <Route exact path="/pendencias-ccb-facta-inss/:propostaId" name="Cédula de Crédito Bancário INSS" render={props => <CedulaFactaInss tipo="pendencias" {...props}/>} />
               <Route exact path="/regularizacao-ccb-facta-inss/:propostaId" name="Cédula de Crédito Bancário INSS" render={props => <CedulaFactaInss tipo="regularizacao" {...props}/>} />
               <Route exact path="/facta-inss-seguro/:propostaId" name="Cédula de Crédito Bancário INSS" render={props => <FactaSeguroInss tipo="normal" {...props}/>} />
+              <Route exact path="/facta-gov-sc-seguro/:propostaId" name="Cédula Seguro Gov SC" render={props => <FactaGovScSeguro tipo="normal" {...props}/>} />
+              <Route exact path="/facta-gov-pr-seguro/:propostaId" name="Cédula Seguro Gov SC" render={props => <FactaGovPrSeguro tipo="normal" {...props}/>} />
               <Route exact path="/ccb-facta-inss-cartao/:propostaId" name="Cédula de Crédito Cartão INSS" render={props => <FactaInssCartao tipo="normal" {...props}/>} />
               <Route exact path="/ccb-inss-cartao-rep-legal/:propostaId" name="Cédula de Crédito Cartão INSS" render={props => <FactaInssCartaoRepLegal tipo="normal" {...props}/>} />
 
@@ -217,6 +228,12 @@ class App extends Component {
               {/* TELAS DO AUXILIO BRASIL */}
               <Route exact path="/facta-aux-brasil/:propostaId" name="Facta FGTS" render={props => <FactaFgts  tipo="auxbrasil" {...props}/>} />
               {/* ### */}
+
+              <Route exact path="/ccb-facta-gov-mg/:propostaId" name="Cédula de Crédito Bancário GOV MG" render={props => <CedulaFactaGovMg tipo="normal" {...props}/>} />
+
+              <Route exact path="/ccb-facta-gov-sc/:propostaId" name="Cédula de Crédito Bancário GOV SC" render={props => <CedulaFactaGovSc tipo="normal" {...props}/>} />
+              <Route exact path="/ccb-facta-gov-pr/:propostaId" name="Cédula de Crédito Bancário GOV PR" render={props => <CedulaFactaGovPr tipo="normal" {...props}/>} />
+              <Route exact path="/ccb-facta-previmpa/:propostaId" name="Cédula de Crédito Bancário Previmpa" render={props => <CedulaFactaPrevimpa tipo="normal" {...props}/>} />
 
               {/*<Route path="/" name="Home" render={props => <DefaultLayout {...props}/>} />*/}
             </Switch>

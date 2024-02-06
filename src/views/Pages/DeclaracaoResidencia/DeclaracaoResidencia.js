@@ -7,7 +7,9 @@ import md5 from 'md5';
 import {isMobile} from 'react-device-detect';
 
 import LayoutFactaHeader from '../../../LayoutFactaHeader';
+import LayoutFactaCarregando from '../../../LayoutFactaCarregando';
 import TimelineProgresso from '../../TimelineProgresso';
+import LoderOnly from "../../../LoderOnly"
 
 import {isHoraMaior} from "../../../config";
 class DeclaracaoResidencia extends Component {
@@ -61,7 +63,8 @@ class DeclaracaoResidencia extends Component {
       base64CcbTermos: '',
       lojasLiberar: [],
       codigoCorretor: 0 ,
-      classificacao: ''
+      classificacao: '',
+      loadBlackBox: false
     };
 
     this.toggleDanger = this.toggleDanger.bind(this);
@@ -113,13 +116,8 @@ class DeclaracaoResidencia extends Component {
       this.state.classificacao = parseInt(_CORRETOR.Classificacao);
 
     }
-      {/*estamos aqui*/}
-    if(parseInt(_PROPOSTA.Averbador) === 1 || parseInt(_PROPOSTA.Averbador) === 23 || parseInt(_PROPOSTA.Averbador) === 10 || parseInt(_PROPOSTA.Averbador) === 15 || parseInt(_PROPOSTA.Averbador) === 30 || parseInt(_PROPOSTA.Averbador) === 390 
-    || parseInt(_PROPOSTA.Averbador) === 401 || parseInt(_PROPOSTA.Averbador) === 10226 || parseInt(_PROPOSTA.Averbador) === 20124
-    ) { 
-      this.state.averbador = parseInt(_PROPOSTA.Averbador);
-    }
 
+    this.state.averbador = parseInt(_PROPOSTA.Averbador);
 
 
     this.state.labelDocumento = _state.tipoDocumento === 'RG' ? 'do RG' : 'da CNH';
@@ -169,46 +167,20 @@ class DeclaracaoResidencia extends Component {
   }
 
   componentDidMount () {
+
+
     this.getListaCidadesBase();
 
-    if(parseInt(this.state.averbador) === 20095 )   {
-        this.state.proximoLink = '/face-api-unico/'+this.props.match.params.propostaId;
-        //this.getLiberaV6();
-    }
+    let arrayAverbadores = [20095,3,1,23,10,15,30,390,401,10226,20124,315,17,292,20135,710];
 
-    if(parseInt(this.state.averbador) === 3) {
+    if(arrayAverbadores.indexOf(parseInt(this.state.averbador)) != '-1') {
       this.state.proximoLink = '/face-api-unico/'+this.props.match.params.propostaId;
+    } else {
+      this.state.proximoLink = '/digital/'+this.props.match.params.propostaId;
     }
-  
 
-    if(parseInt(this.state.averbador) === 1 || parseInt(this.state.averbador) === 23 || parseInt(this.state.averbador) === 10 || parseInt(this.state.averbador) === 15 || parseInt(this.state.averbador) === 30 ||
-     parseInt(this.state.averbador) === 390 || parseInt(this.state.averbador) === 401 || parseInt(this.state.averbador) === 10226 || parseInt(this.state.averbador) === 20124) {
-     this.state.proximoLink = '/face-api-unico/'+this.props.match.params.propostaId; //teste
-    }
   }
-  
-  getLiberaV6 =  async () => { 
-    await axios
-    .get('https://app.factafinanceira.com.br/proposta/get_dados_liberaV6')
-    .then(res => {  
-
-      console.log('Teste');
-      console.log(res.data);
-      res.data.map((dados, index) => (
-      
-       this.state.lojasLiberar.push(dados.CODIGO)
-      ));
-
-      this.state.lojasLiberar.push(31276);
-      this.state.lojasLiberar.push(19778);
-
-      if((this.state.lojasLiberar.indexOf(this.state.codigoCorretor) != '-1')) {
-        this.state.proximoLink = '/face-api-unico/'+this.props.match.params.propostaId;
-      }
-    })
-    .catch(error => console.log(error));
-  };
-
+ 
 
   toggleDanger() {
     this.setState({
@@ -256,6 +228,7 @@ class DeclaracaoResidencia extends Component {
         aceitouDebitoEmConta: this.state.aceitouDebitoEmConta,
         dataHoraAceitouDebitoEmConta: this.state.dataHoraAceitouDebitoEmConta,
         obj_pendencias: this.state.obj_pendencias,
+        bbBlackBox : this.state.bbBlackBox
       }
     });
   }
@@ -474,6 +447,9 @@ class DeclaracaoResidencia extends Component {
     }
   }
 
+  setLoadBlackBox = () => {
+    this.setState({loadBlackBox : true});
+  }
   render() {
 
     const appHeightAuto = {
@@ -616,7 +592,7 @@ class DeclaracaoResidencia extends Component {
                                     }
 
                                     
-                                    {(this.state.obj_proposta.Tipo_Operacao == 35 || this.state.obj_proposta.Tipo_Operacao == 36) && 
+                                    {(this.state.obj_proposta.Tipo_Operacao == 35 || this.state.obj_proposta.Tipo_Operacao == 36 || this.state.obj_proposta.Tipo_Operacao == 47) && 
                                       <Row className="mt-5">
                                         <Col className="text-justify" md="12" lg="12" xs="12" sm="12">
                                           <h5 style={{"lineHeight" : "30px"}}>
@@ -642,6 +618,9 @@ class DeclaracaoResidencia extends Component {
                                   </Col>
                                 </Row>
                                 <Row>
+                                {this.state.loadBlackBox === false ?
+                                    <LayoutFactaCarregando /> 
+                                :
                                   <Col className="text-center" xs="12">
                                     <Col className="text-center mt-3" md="12" lg="12" xs="12" sm="12">
                                       <Button color="outline-danger" size="lg" className="rounded-circle m-1" style={{'width' : '64px', 'height' : '64px'}} onClick={() => {this.setState({etapa : 'editar'})}}>
@@ -652,6 +631,7 @@ class DeclaracaoResidencia extends Component {
                                       </Button>
                                     </Col>
                                   </Col>
+                                }
                                 </Row>
                               </>
                             : <>
@@ -755,6 +735,19 @@ class DeclaracaoResidencia extends Component {
                 </Col>
               </Row>
             </Col>
+            {this.state.loadBlackBox === false &&
+              <div>
+                <LoderOnly
+                    setLoadBlackBox = {this.setLoadBlackBox}
+                    codigoAF = {atob(this.state.codigoAFOriginal)}
+                    tipo_operacao = {this.state.obj_proposta.Tipo_Operacao}
+                    averbador = {this.state.averbador}
+                    isBlackbox = {false}
+                    isApiBlackbox = {true}
+                    bbBlackBox = {this.state.obj_proposta.bbBlackBox}
+                  />
+              </div>
+            }
             </>
             : null
           }

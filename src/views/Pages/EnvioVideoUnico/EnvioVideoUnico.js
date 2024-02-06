@@ -70,6 +70,12 @@ class EnviovideoUnico extends Component {
   downloadVideo = (blob) => {
     //console.log('blob');
     var reader = new FileReader();
+
+
+    reader.onerror = function(e) {
+      // Lida com erros aqui, por exemplo, mostrando uma mensagem de erro.
+      alert(e);
+    };
     //console.log(blob);
     reader.readAsDataURL(blob);
     reader.onloadend = function() {

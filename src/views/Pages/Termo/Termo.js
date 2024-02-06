@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Button, Collapse, Col, Row, Card, CardBody } from 'reactstrap';
+import {  Button, Collapse, Col, Row, Card, CardBody } from 'reactstrap';
 import { Link } from "react-router-dom";
 import {isMobile} from 'react-device-detect';
+
 
 import LayoutFactaHeader from '../../../LayoutFactaHeader';
 import LayoutFactaCarregando from '../../../LayoutFactaCarregando';
@@ -10,6 +11,9 @@ import TimelineProgresso from '../../TimelineProgresso';
 import axios from 'axios';
 
 import {isHoraMaior} from "../../../config";
+
+import LoderOnly from "../../../LoderOnly"
+
 class Termo extends Component {
 
   constructor(props) {
@@ -55,8 +59,10 @@ class Termo extends Component {
       regionName: "",
       status: "",
       timezone: "",
-      zip: ""
-
+      zip: "", 
+      ip: "",
+      blackbox : true,
+      retornou_dados : false
     };
 
     if (this.props.location.state === undefined) {
@@ -64,8 +70,9 @@ class Termo extends Component {
       return false;
     }
 
+
     this.state.DADOS_PROPOSTA_DIGITAL = this.props.location.state.DADOS_PROPOSTA_DIGITAL;
-    this.state.obj_proposta = this.props.location.state.DADOS_PROPOSTA_DIGITAL;
+    //this.state.obj_proposta = this.props.location.state.DADOS_PROPOSTA_DIGITAL;
 
     var PROP = this.state.DADOS_PROPOSTA_DIGITAL;
 
@@ -80,22 +87,22 @@ class Termo extends Component {
     if (_state.averbador === 1) {
       orgao = 'facta-tesouro';
     }
-    else if (_state.averbador === 3 && PROP.Tipo_Operacao !== 33) {
-      orgao = 'facta-inss';
-    }
-    if (_state.averbador === 3 && PROP.Tipo_Operacao === 33) {
+    if (_state.averbador === 3 && ([33,45,47,48,46].indexOf(PROP.Tipo_Operacao) !== -1)) {
       orgao = 'facta-inss-cartao';
     }
-    if (_state.averbador === 3 && (PROP.Tipo_Operacao === 36 || PROP.Tipo_Operacao === 40  || PROP.Tipo_Operacao === 42)) {
+    else if (_state.averbador === 3 && (PROP.Tipo_Operacao === 36 || PROP.Tipo_Operacao === 40  || PROP.Tipo_Operacao === 42)) {
       orgao = 'inss-cartao-rep-legal';
+    }
+    else if (_state.averbador === 3 && (PROP.Tipo_Operacao !== 33 && PROP.Tipo_Operacao !== 45)) {
+      orgao = 'facta-inss';
     }
     else if (_state.averbador === 10) {
       orgao = 'facta-exercito';
     }
-    else if (_state.averbador === 15 && PROP.Tipo_Operacao !== 33) {
+    else if (_state.averbador === 15 && (PROP.Tipo_Operacao !== 33 && PROP.Tipo_Operacao !== 45)) {
       orgao = 'facta-siape';
     }
-    else if (_state.averbador === 15 && PROP.Tipo_Operacao === 33) {
+    else if (_state.averbador === 15 && (PROP.Tipo_Operacao === 33 || PROP.Tipo_Operacao === 45)) {
       orgao = 'facta-siape-cartao';
     }
     else if (_state.averbador === 30) {
@@ -104,21 +111,28 @@ class Termo extends Component {
     else if (_state.averbador === 100) {
       orgao = 'facta-poder-judiciario';
     }
-    else if (_state.averbador === 390) {
+    else if (_state.averbador === 390 || _state.averbador === 710) {
       orgao = 'facta-facil';
     }
      // FACCIOLI - 22/06/2021
     else if (_state.averbador === 20095) {
       orgao = 'facta-fgts';
     }
-    else if (_state.averbador === 10226) {
+    else if (_state.averbador === 10226 || _state.averbador === 20135) {
       orgao = 'facta-prf-poa';
     }
     else if (_state.averbador === 20124) {
       orgao = 'facta-aux-brasil';
     }else if( _state.averbador === 23 ) {
       orgao = 'facta-marinha';
+    }else if( _state.averbador === 315 ) {
+      orgao = 'facta-gov-mg';
+    }else if( _state.averbador === 17 && (PROP.Tipo_Operacao === 33 || PROP.Tipo_Operacao === 45)) {
+      orgao = 'facta-gov-sc';
+    }else if( _state.averbador === 292 && (PROP.Tipo_Operacao === 33 || PROP.Tipo_Operacao === 45)) {
+      orgao = 'facta-gov-pr';
     }
+  
 
    // FACCIOLI - 22/06/2021
     if(_state.averbador === 20095) { 
@@ -141,7 +155,24 @@ class Termo extends Component {
 
   }
 
-  componentDidMount() {
+
+
+  async componentDidMount () {
+
+
+    window.io_global_object_name = "IGLOO"
+    window.IGLOO = window.IGLOO || {
+        "enable_flash" : false,
+        "bbout_element_id" : "ioBlackBox",  // this can be changed to store in a different hidden field (or removed to use a different collection method)
+        "loader" : {
+        "uri_hook" : "iojs",
+        "subkey"  : "",
+        "version" : "general5"
+        }
+    };
+
+    
+
     setTimeout(() => {window.scrollTo(0, 3)}, 100);
     navigator.geolocation.getCurrentPosition(
       function(position) {
@@ -152,15 +183,48 @@ class Termo extends Component {
       }.bind(this)
     );
 
+    await this.getDadosCliente();
+
     this.getDadosLogDispositivo();
 
     if (this.props.location.state !== undefined) {
       let retIpApi = this.getIpDispositivo();
     }
-
-    console.log('obj_proposta');
-    console.log(this.state.obj_proposta);
   }
+
+
+
+
+  getDadosCliente = async () => {
+  
+    let numeroregistro = this.props.location.state.DADOS_PROPOSTA_DIGITAL.CLIENTE.numeroregistro;
+    let codigoAF = btoa(this.props.match.params.propostaId); 
+    let token = this.props.location.state.token;
+    
+    await axios
+    .get('https://app.factafinanceira.com.br/proposta/get_dados_proposta?codigo=' + codigoAF + '&serie=' + numeroregistro + '&token=true', {
+      headers: {
+        'Authorization': 'Bearer ' + token,
+      },
+    })
+    .then(res => {
+      if (res.data.tokenExpired === true) {
+          this.props.history.push(this.state.homeLink);
+          return false;
+       } else {
+
+        this.setState({
+          obj_proposta: res.data,
+          DADOS_PROPOSTA_DIGITAL: res.data,
+          retornou_dados : true
+        });
+      }
+    })
+    .catch(error => console.log(error));
+
+  };
+
+
 
   onEntering() {
     this.setState({ status: 'Opening...' });
@@ -299,7 +363,7 @@ class Termo extends Component {
 
     return false;
 
-}
+  }
 
   toggleAccordion(tab) {
 
@@ -325,10 +389,14 @@ class Termo extends Component {
     this.setState({ fadeIn: !this.state.fadeIn });
   }
 
+  setBlackBox = (bbBlackBox) => {
+    this.setState({blackbox : true});
+    this.state.obj_proposta.bbBlackBox = bbBlackBox;
+  }
+
   render() {
     const appHeightAuto = {
       "height": "auto"
-      
     };
 
     const containerPaddingTop = {
@@ -343,7 +411,7 @@ class Termo extends Component {
     return (
       <>
       { this.state.permissaoLocalizacao === true
-        ? (
+        ? ( 
           <>
           <div className="app align-items-center" style={appHeightAuto} >
 
@@ -421,6 +489,7 @@ class Termo extends Component {
                             <p>3.3. Podemos também armazenar e manter informações para garantir a segurança e a confiabilidade dos serviços da <span className="font-weight-bold text-dark">Facta Financeira</span>, bem como para cumprir com determinações legais.</p>
                             <p>3.4. Você poderá solicitar a revisão e correção de seus dados sem qualquer ônus e a qualquer tempo. Para isso, basta entrar em contato por meio de um dos canais de atendimento disponíveis. Ao terminar sua relação com a <span className="font-weight-bold text-dark">Facta Financeira</span>, caso deseje excluir seus dados, lembre-se que a Facta Financeira, com o fim de cumprir com obrigações legais, armazenará determinados dados pelo período e nos termos que a legislação vigente aplicável exigir.</p>
                             <p>3.5. A <span className="font-weight-bold text-dark">Facta Financeira</span> poderá utilizar, formatar e divulgar depoimentos referentes a Facta Financeira postados por Você em vídeos, perfis e páginas públicas nas redes sociais, juntamente com seu nome e imagens (incluindo fotos de perfil), em websites, aplicativos ou materiais institucionais e publicitários para a divulgação dos serviços prestados pela <span className="font-weight-bold text-dark">Facta Financeira</span> ou para comprovação de contratação de produtos <span className="font-weight-bold text-dark">Facta Financeira</span>.</p>
+                            <p>3.6. Concordo com a contratação por meio de plataforma eletrônica digital do <span className="font-weight-bold text-dark">CREDOR</span>. <span className="font-weight-bold text-dark">AUTORIZO</span> a utilização de minha imagem para os fins de comprovação e validação de minha expressa manifestação de vontade para emissão desta CCB – Cédula de Crédito Bancário. <span className="font-weight-bold text-dark">AUTORIZO</span>, INSS/Dataprev e demais órgãos competentes a utilizar registros de imagem e validação para fins de auditoria de identificação.</p>
                           </Collapse>
                         </div>
                         <div className="item">
@@ -433,47 +502,61 @@ class Termo extends Component {
                           </Collapse>
                         </div>
                       </div>
-                    </Col>
+                    </Col> 
                   </Row>
 
                   <Row className="mt-3">
                     <Col xs="12" sm="12">
 
-                      {(this.state.isEncerrar == false) &&
-                        
-                        <Link className="btn btn-outline-primary btn-block btn-lg font-weight-bold" to={{
-                          pathname: this.state.proximoLink,
-                          state: {
-                            navegacao: true,
-                            dataHoraTermo: [new Date().getFullYear(), new Date().getMonth()+1, new Date().getDate()].join('-')+' '+[new Date().getHours(),new Date().getMinutes(),new Date().getSeconds()].join(':'),
-                            geoInicial: this.state.geoInicial,
-                            geoTermo: this.state.localizacaoTermo,
-                            dataHoraPrimeiraTela: this.state.dataHoraPrimeiraTela,
-                            obj_proposta: this.state.obj_proposta,
-                            DADOS_STATE_TERMO: this.state
-                          }
-                        }} >
-                          Eu <strong>li</strong> e <strong>aceito</strong> os termos
-                        </Link>
+                      {(this.state.isEncerrar === false) &&
+                          (this.state.blackbox === false || this.state.retornou_dados === false)  ?
+                              <LayoutFactaCarregando /> 
+                          :
+                            <Link className="btn btn-outline-primary btn-block btn-lg font-weight-bold" 
+                            to={{
+                              pathname: this.state.proximoLink,
+                              state: {
+                                navegacao: true,
+                                dataHoraTermo: [new Date().getFullYear(), new Date().getMonth()+1, new Date().getDate()].join('-')+' '+[new Date().getHours(),new Date().getMinutes(),new Date().getSeconds()].join(':'),
+                                geoInicial: this.state.geoInicial,
+                                geoTermo: this.state.localizacaoTermo,
+                                dataHoraPrimeiraTela: this.state.dataHoraPrimeiraTela,
+                                obj_proposta: this.state.obj_proposta,
+                                DADOS_STATE_TERMO: this.state,
+                                bbBlackBox : this.state.bbBlackBox
+                              }
+                            }}
+                            
+
+                            >
+                              Eu <strong>li</strong> e <strong>aceito</strong> os termos
+                            </Link>
+                          
                       
                       }
-                      {(this.state.isEncerrar == true) &&
+
+                      {(this.state.isEncerrar === true) &&
                       
                         <Link className="btn btn-outline-primary btn-block btn-lg font-weight-bold"
                             onClick={() => this.encerraProposta() } 
                             to="#" 
                         >
-                        Eu <strong>li</strong> e <strong>aceito</strong> os termos
+                        Eu <strong>li</strong> e <strong>aceito</strong> os termos 
                       </Link>
                       }
-                      
                     </Col>
-                  </Row>
+                    </Row>
                   </CardBody>
                 </Card>
               </Col>
             </Row>
             </Col>
+            {<LoderOnly
+                setBlackBox = {this.setBlackBox}
+                codigoAF = {this.state.codigoAF}
+                isBlackbox = {true}
+                isApiBlackbox = {false}
+                    />}
           </div>
         </>
       )

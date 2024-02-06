@@ -14,14 +14,15 @@ import PaginaMensagemLocalizacao from '../../../PaginaMensagemLocalizacao';
 
 import DadosDaPropostaTemplate from '../../../DadosDaPropostaTemplate';
 import DadosDaPropostaBlocoTemplate from '../../../DadosDaPropostaBlocoTemplate';
-import DadosLimiteCreditoBlocoTemplate from '../../../DadosLimiteCreditoBlocoTemplate';
-
 import DadosDaPropostaVinculadaTemplate from '../../../DadosDaPropostaVinculadaTemplate';
 import DadosDoClienteTemplate from '../../../DadosDoClienteTemplate';
 import DadosDoCorretorTemplate from '../../../DadosDoCorretorTemplate';
 import TimelineProgresso from '../../TimelineProgresso';
 
-class CedulaFactaInssCartao extends Component {
+import DadosLimiteCreditoBlocoTemplate from '../../../DadosLimiteCreditoBlocoTemplate';
+
+
+class CedulaFactaGovMg extends Component {
 
   constructor(props) {
     super(props);
@@ -75,7 +76,7 @@ class CedulaFactaInssCartao extends Component {
       erroPrintCCB : '',
       etapaFinal : false,
       vlrSeguro : 0
-    };
+    }; 
 
     this.toggleModalAbertura = this.toggleModalAbertura.bind(this);
     this.toggleModalSeguro = this.toggleModalSeguro.bind(this);
@@ -103,6 +104,7 @@ class CedulaFactaInssCartao extends Component {
 
       var _state = this.props.location.state;
       var PRINCIPAL = _state.obj_pendencias !== undefined && _state.obj_pendencias !== [] ? _state.obj_pendencias : _state.obj_proposta;
+      console.log(PRINCIPAL)
 
       this.state.obj_proposta = _state.obj_proposta;
       this.state.obj_vinculadas = _state.obj_proposta.PROPOSTA_VINCULADA;
@@ -160,12 +162,17 @@ class CedulaFactaInssCartao extends Component {
         }
       }
       else {
+        console.log(this.state.obj_proposta.Averbador)
         //this.state.proximoLink = '/tipo-documento/'+this.props.match.params.propostaId; // Rota antiga para já tirar foto dos DOCS
-        this.state.proximoLink = '/facta-inss-seguro/'+this.props.match.params.propostaId;
+        if ((parseInt(this.state.tipoOperacao.Codigo) === 33 || parseInt(this.state.tipoOperacao.Codigo) === 45) && this.state.obj_proposta.Averbador != 315) {
+          this.state.proximoLink = '/facta-inss-seguro/'+this.props.match.params.propostaId;
+        } else {
+          this.state.proximoLink = '/declaracao-de-residencia/'+this.props.match.params.propostaId;
+        }
+        console.log('Link: '+this.state.proximoLink);
       }
 
     }
-
 
     localStorage.setItem('@app-factafinanceira-formalizacao/dados_ccb/erro', '');
     localStorage.setItem('@app-factafinanceira-formalizacao/print_ccb_1', '');
@@ -229,31 +236,18 @@ class CedulaFactaInssCartao extends Component {
 
   };
 
-
-  async componentDidMount () {
+  componentDidMount() {
     this.setState({ carregando : false });
-    setTimeout( () => {window.scrollTo(0, 3)}, 100);
-
-    const getCoords = async () => {
-      try {
-          const pos = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject);
-          });
-
-          return {
-            long: pos.coords.longitude,
-            lat: pos.coords.latitude,
-          };
-      } catch (err) {
+    setTimeout(() => {window.scrollTo(0, 3)}, 100);
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        this.setState({ localizacaoCcb: "https://www.google.com/maps/place/" + position.coords.latitude + "," + position.coords.longitude, permissaoLocalizacao: true });
+      }.bind(this),
+      function(error) {
         this.setState({ permissaoLocalizacao: false });
-      }
-    };
-
-    const coords = await getCoords();
-
-    this.setState({ localizacaoCcb: "https://www.google.com/maps/place/" + coords.lat + "," + coords.long, permissaoLocalizacao: true });
-
- }
+      }.bind(this)
+    );
+  }
 
   validaPropostaINSS(vinculada) {
     if (vinculada.Averbador === 3) {
@@ -264,7 +258,6 @@ class CedulaFactaInssCartao extends Component {
   salvaImgCcb = async () => {
     this.setState({clicou: true});
     let corretor = this.state.obj_proposta.CORRETOR;
-
 
     if (this.state.aceitouSeguro === false && (this.state.vlrSeguro > 0)) {
 
@@ -303,6 +296,7 @@ class CedulaFactaInssCartao extends Component {
           const axios = require('axios');
           const formData = new FormData();
           var averbador = parseInt(this.state.obj_proposta.Averbador);
+          
           this.setState({ carregando: true });
 
           if (this.state.base64Ccb !== '' && this.state.base64Ccb !== undefined) {
@@ -467,6 +461,10 @@ class CedulaFactaInssCartao extends Component {
   }
 
   render() {
+    const iconWarning = {
+      "color" : "red"
+    }
+
     const appHeightAuto = {
       "height": "auto",
       "overflowY" : !isMobile ? "hidden" : "unset",
@@ -490,10 +488,9 @@ class CedulaFactaInssCartao extends Component {
       var CODIGO = this.state.obj_proposta.CODIGO;
       var COD_TP_OPERACAO = parseInt(this.state.obj_proposta.Tipo_Operacao);
       var TIPO_OPERACAO = this.state.tipoOperacao !== undefined ? this.state.tipoOperacao.nome : '';
-
-      
       var DATA_INI_PROPOSTA = this.state.obj_proposta.DATAINICIO;
       var DATA_FIM_PROPOSTA = this.state.obj_proposta.DATAFIM;
+      console.log(AF);
     }
 
     return (
@@ -502,7 +499,7 @@ class CedulaFactaInssCartao extends Component {
       { this.state.carregando
         ? <LayoutFactaCarregando />
         : ( this.state.permissaoLocalizacao === true
-          ?
+          ? 
             <>
             <Col className="w-100 p-3 min-vh-100 text-center" style={containerPaddingTop} id="ccbCliente">
 
@@ -530,22 +527,77 @@ class CedulaFactaInssCartao extends Component {
 
                   <Col md={{size: isMobile ? 10 : 6, offset: isMobile ? 1 : 0}} style={{ 'height' : (window.screen.height * 0.85), 'overflow' : isMobile ? "unset" : "auto" }}>
 
-                    <DadosDaPropostaTemplate proposta={AF} tipo_operacao={TIPO_OPERACAO} isCtrInss = {true}/>
-
+                    <DadosDaPropostaTemplate proposta={AF} tipo_operacao={TIPO_OPERACAO} />
+                    {/*console.log('T.Op: ' + TIPO_OPERACAO)*/}
                     <DadosDoClienteTemplate cliente={this.state.obj_cliente} />
 
+                  { (parseInt(this.state.obj_proposta.Averbador) != 23 && parseInt(this.state.obj_proposta.Averbador) != 10) &&
+
                     <Card className="border-white shadow" style={{borderRadius: '8px'}}>
+                      <CardBody className="text-left">
+                        <h5 className="text-center pb-4 border-bottom border-light">Dados da Autarquia</h5>
+                        <Row>
+                          <Col xs="12" sm="12" xm="12">
+                            <label>Autarquia</label>
+                            <p className="font-weight-bold">{ AF.S_DADOSPESSOAIS.gov_mg_autarquia }</p>
+                          </Col>  
+                          <Col xs="12" sm="12" xm="12">
+                            <label>Categoria</label>
+                            <p className="font-weight-bold">{ AF.S_DADOSPESSOAIS.gov_mg_categoria }</p>
+                          </Col>
+                          <Col xs="6" sm="6" xm="6">
+                            <label>Nº da Matrícula</label>
+                            <p className="font-weight-bold">{ AF.MATRICULA }</p>
+                          </Col>
+                          <Col xs="6" sm="6" xm="6">
+                            <label>Valor da Renda</label>
+                            <p className="font-weight-bold">{ parseFloat(AF.VLRBENEFICIO).toLocaleString('pt-BR', formatoValor) }</p>
+                          </Col>
+                        </Row> 
+                          { (AF.S_DADOSPESSOAIS.gov_mg_processo != '') &&
+                            <Row>
+                                <Col xs="12" sm="12" xm="12">
+                                  <label>Número do Processo</label>
+                                  <p className="font-weight-bold">{ AF.S_DADOSPESSOAIS.gov_mg_processo }</p>
+                                </Col>
+                                <Col xs="12" sm="12" xm="12">
+                                  <label>Nome</label>
+                                  <p className="font-weight-bold">{ AF.S_DADOSPESSOAIS.gov_mg_nome }</p>
+                                </Col>
+                                <Col xs="12" sm="12" xm="12">
+                                  <label>CPF</label>
+                                  <p className="font-weight-bold">{ AF.S_DADOSPESSOAIS.gov_mg_cpf }</p>
+                                </Col>
+                            </Row>  
+                          }
+                      </CardBody>
+                    </Card>
+                  }
+
+
+
+                  { (parseInt(this.state.obj_proposta.Averbador) === 23 || parseInt(this.state.obj_proposta.Averbador) === 10)  &&
+
+                      <Card className="border-white shadow" style={{borderRadius: '8px'}}>
                       <CardBody className="text-left">
                         <h5 className="text-center pb-4 border-bottom border-light">Dados Funcionais</h5>
                         <Row>
                           <Col xs="12" sm="12" xm="12">
                             <label>Fonte Pagadora</label>
-                            <p className="font-weight-bold">INSS</p>
+                            <p className="font-weight-bold">{parseInt(this.state.obj_proposta.Averbador) === 23 ? 'MARINHA DO BRASIL' : 'EXERCITO DO BRASIL'}</p>
                           </Col>
                           <Col xs="12" sm="12" xm="12">
-                            <label>Nº do Benefício</label>
-                            <p className="font-weight-bold">{ AF.MATRICULA }</p>
+                            <label>Matrícula Funcional</label>
+                            <p className="font-weight-bold">{ AF.MATRICULA }</p> {/*Trocar Matricula p/ MatriculaFuncional*/}
                           </Col>
+                          <Col xs="12" sm="12" xm="12">
+                            <label>Situação Funcional</label>
+                            <p className="font-weight-bold">{ AF.SITUACAO_FUNCIONAL }</p> {/*Trocar Matricula p/ presente na tabela "propostaDadosPessoais" */}
+                          </Col>
+                          <Col xs="12" sm="12" xm="12">
+                            <label>Cargo</label>
+                            <p className="font-weight-bold">{ AF.MARINHA_POSTO.DESCRICAO }</p> {/* MARINHA_POSTOS.DESCRICAO  -- Trocar Matricula p/ presente na tabela "propostaDadosPessoais" */}
+                          </Col> 
                         </Row>
                         <Row>
                           <Col xs="12" sm="12" xm="12">
@@ -553,8 +605,24 @@ class CedulaFactaInssCartao extends Component {
                             <p className="font-weight-bold text-capitalize">{ this.state.obj_proposta !== [] && AF.TIPOBENEFICIO !== '' && this.state.espBeneficio[0] !== undefined ? AF.TIPOBENEFICIO + ' - ' + this.state.espBeneficio[0].NOME.toLowerCase() : ' - ' }</p>
                           </Col>
                         </Row>
+                        {(parseInt(AF.Tipo_Operacao) === 35 || parseInt(AF.Tipo_Operacao) === 37 || parseInt(AF.Tipo_Operacao) === 43 || parseInt(AF.Tipo_Operacao) === 44) &&
+                          <Row>
+                            <Col xs="12" sm="12" xm="12">
+                              <label>Nome Representante Legal</label>
+                              <p className="font-weight-bold">{AF.NOME_REPRESENTANTE}</p>
+                            </Col>
+                            <Col xs="12" sm="12" xm="12">
+                              <label>CPF Representante Legal</label>
+                              <p className="font-weight-bold">{AF.CPF_REPRESENTANTE}</p>
+                            </Col>
+                          </Row>
+                        }
                       </CardBody>
                     </Card>
+
+                  }
+
+
 
                     <Card className="border-white shadow" style={{borderRadius: '8px'}}>
                       <CardBody className="text-left">
@@ -582,6 +650,10 @@ class CedulaFactaInssCartao extends Component {
 
                     <DadosDaPropostaBlocoTemplate proposta={AF} tipo_operacao={TIPO_OPERACAO} cod_tipo_operacao={COD_TP_OPERACAO}/>
 
+                    {([45,46,47,48].indexOf(COD_TP_OPERACAO) === -1) &&
+                      <DadosLimiteCreditoBlocoTemplate proposta={AF} codigo_af ={atob(this.state.codigoAF64)} tipo_operacao={TIPO_OPERACAO} cod_tipo_operacao={COD_TP_OPERACAO}/>
+                    }
+                    
                     {
                       this.state.obj_vinculadas !== undefined ? (
                           Object.values(this.state.obj_vinculadas).map(item_vinculada => (
@@ -593,47 +665,59 @@ class CedulaFactaInssCartao extends Component {
                       ) : null
                     }
 
-                    {([45,46,47,48].indexOf(COD_TP_OPERACAO) === -1) &&
-                      <DadosLimiteCreditoBlocoTemplate proposta={AF} codigo_af ={atob(this.state.codigoAF64)} tipo_operacao={TIPO_OPERACAO} cod_tipo_operacao={COD_TP_OPERACAO}/>
+                    { AF.DESBLOQUEAR_BENEFICIO === "S"
+                      ? <>
+                        <Card className="border-white shadow" style={{borderRadius: '8px'}}>
+                          <CardBody className="text-left">
+                            <h5 className="text-center border-bottom border-light pb-3">Termo de Autorização de Desbloqueio de Benefício</h5>
+                            <Row>
+                              <Col xs="12" sm="12" xm="12">
+                                <FormGroup check className="checkbox">
+                                  <Input className="form-check-input" type="checkbox" id="checkbox1" name="autorizacao_dataprev" value="1" defaultChecked onChange={this.handleChange} />
+                                  <Label check className="form-check-label" htmlFor="checkbox1">
+                                    Eu <span className="font-weight-bold">{ this.state.obj_cliente.DESCRICAO }</span>, CPF <span className="font-weight-bold">{ this.state.obj_cliente.CPF }</span>,{' '}
+                                    autorizo o INSS/DATAPREV a desbloquear o benefício <span className="font-weight-bold">{ AF.MATRICULA }</span>,{' '}
+                                    para que seja possível realizar a contratação de empréstimo consignado ou cartão consignado de benefícios do INSS.
+                                  </Label>
+                                </FormGroup>
+                              </Col>
+                            </Row>
+                          </CardBody>
+                        </Card>
+                        </>
+                      : null
                     }
 
-                    <Card className="border-white shadow" style={{borderRadius: '8px'}}>
-                      <CardBody className="text-left">
-                        <h5 className="text-center border-bottom border-light pb-3 font-weight-bold"><i className="fa fa-warning" style={iconWarning}></i>  ATENÇÃO <i className="fa fa-warning red-color" style={iconWarning}></i></h5>
+
+              <Card className="border-white shadow" style={{borderRadius: '8px'}}>
+                  <CardBody className="text-left">
+                    <h5 className="text-center border-bottom border-light pb-3 font-weight-bold"><i className="fa fa-warning" style={iconWarning}></i>  ATENÇÃO <i className="fa fa-warning red-color" style={iconWarning}></i></h5>
+                    <Col xs="12" sm="12" xm="12">
+                      <Label check className="form-check-label text-justify">
+                      A Facta NÃO solicita valores antecipados ou quaisquer tipo de pagamentos/transferências para contas que não sejam de titularidade da FACTA FINANCEIRA com CNPJ de inscrição. Antes de realizar depósitos ou pagamentos, entre em contato conosco  0800.9420462 ou 5131917318.
+                      </Label>
+                    </Col>
+                  </CardBody>
+                </Card>
+
+                { (parseInt(this.state.obj_proposta.Averbador) === 315) &&
+                  <Card className="border-white shadow" style={{borderRadius: '8px'}}>
+                    <CardBody className="text-left">
+                      <h5 className="text-center border-bottom border-light pb-3">Autorização de Reserva de Margem Consignável</h5>
+                      <Row>
                         <Col xs="12" sm="12" xm="12">
-                          <Label check className="form-check-label text-justify">
-                          A Facta NÃO solicita valores antecipados ou quaisquer tipo de pagamentos/transferências para contas que não sejam de titularidade da FACTA FINANCEIRA com CNPJ de inscrição. Antes de realizar depósitos ou pagamentos, entre em contato conosco  0800.9420462 ou 5131917318.
-                          </Label>
+                          <FormGroup check className="checkbox">
+                            <Input className="form-check-input" type="checkbox" id="checkbox1" name="autorizacao_dataprev" value="1" defaultChecked onChange={this.handleChange} />
+                            <Label check className="form-check-label" htmlFor="checkbox1">
+                              Pelo presente autorizo o Governo do Estado de Minas Gerais / Consignante, a reservar até 10% (dez por cento) da margem consignável para quitação de despesas contraídas por meio de cartão de crédito, a favor do(a) <span className="font-weight-bold">FACTA FINANCEIRA S.A. CFI</span>.
+                            </Label>
+                          </FormGroup>
                         </Col>
-                      </CardBody>
-                    </Card>
-
-
-                    { this.state.propostaINSS === true && parseInt(this.state.obj_proposta.Averbador) !== 10226
-                      ?
-                        <>
-                          <Card className="border-white shadow" style={{borderRadius: '8px'}}>
-                            <CardBody className="text-left">
-                              <h5 className="text-center border-bottom border-light pb-3">Autorização de Consulta de Dados</h5>
-                              <Row>
-                                <Col xs="12" sm="12" xm="12">
-                                  <FormGroup check className="checkbox">
-                                    <Input className="form-check-input" type="checkbox" id="checkbox1" name="autorizacao_dataprev" value="1" defaultChecked onChange={this.handleChange} />
-                                    <Label check className="form-check-label" htmlFor="checkbox1">
-                                      Eu, { this.state.obj_cliente.DESCRICAO }, autorizo a <span className="font-weight-bold">FACTA FINANCEIRA</span> consultar meus dados junto à <span className="font-weight-bold">DATAPREV</span> através da <span className="font-weight-bold">API</span> disponibilizada pela própria <span className="font-weight-bold">DATAPREV</span>.
-                                    </Label>
-                                  </FormGroup>
-                                </Col>
-                              </Row>
-                            </CardBody>
-                          </Card>
-
-        
-
-        
-                    </>
-                  : null
+                      </Row>
+                    </CardBody>
+                  </Card>
                 }
+ 
 
                 {
                   this.state.obj_contratos !== undefined ? (
@@ -706,7 +790,6 @@ class CedulaFactaInssCartao extends Component {
 
 
 
-
                     <Card className="border-white shadow" style={{borderRadius: '8px'}} id="bloco_DadosDaCcb">
                       <CardBody className="text-left">
                         <h5 className="text-center border-bottom border-light pb-3">PROPOSTA DE ADESÃO</h5>
@@ -732,8 +815,7 @@ class CedulaFactaInssCartao extends Component {
                             <p>
                                 (iii) SOLICITA que sua Fonte Pagadora faça o repasse dos valores descontados dos vencimentos
                                     diretamente à FACTA sempre em nome do próprio CLIENTE, garantindo o abatimento desse valor do total
-                                    da fatura. A presente autorização é, sendo o caso, extensível ao Instituto Nacional do Seguro Social –
-                                    INSS, na qualidade de Fonte Pagadora, conforme preceitua a legislação vigente.
+                                    da fatura. A presente autorização é, sendo o caso, extensível ao Governo de Minas Gerais, na qualidade de Fonte Pagadora, conforme preceitua a legislação vigente.
                             </p>
                             <p>
                                 4. Em caso de mora no pagamento de quaisquer valores devidos nos termos desta Cédula, inclusive
@@ -849,6 +931,7 @@ de Porto Alegre, sob n° 1685503.
                     </Card>
 
 
+
                 </Col>
               </Row>
 
@@ -862,4 +945,4 @@ de Porto Alegre, sob n° 1685503.
   }
 }
 
-export default CedulaFactaInssCartao;
+export default CedulaFactaGovMg;

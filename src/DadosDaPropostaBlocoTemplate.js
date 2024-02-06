@@ -69,7 +69,7 @@ class DadosDaPropostaBlocoTemplate extends Component {
               <p className="font-weight-bold"> {
                 ( COD_TP_OPERACAO !== undefined && (COD_TP_OPERACAO === 2 || COD_TP_OPERACAO === 14 || COD_TP_OPERACAO === 32))
                   ? parseFloat(AF.saldoDevedor !== null  ? AF.saldoDevedor : 0).toLocaleString('pt-BR', formatoValor)
-                  : AF.Tipo_Operacao === 17 ? parseFloat(AF.BASECOMISSAO !== null  ? AF.BASECOMISSAO : 0).toLocaleString('pt-BR', formatoValor) : parseFloat(AF.VLRAF !== null  ? AF.VLRAF : 0).toLocaleString('pt-BR', formatoValor)
+                  : (AF.Tipo_Operacao === 17 || AF.Tipo_Operacao === 43 || AF.Tipo_Operacao === 44) ? parseFloat(AF.BASECOMISSAO !== null  ? AF.BASECOMISSAO : 0).toLocaleString('pt-BR', formatoValor) : parseFloat(AF.VLRAF !== null  ? AF.VLRAF : 0).toLocaleString('pt-BR', formatoValor)
                 }
               </p>
             </Col>

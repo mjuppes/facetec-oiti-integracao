@@ -44,7 +44,7 @@ class DadosDaPropostaTemplate extends Component {
     var DATA_FIM_PROPOSTA = AF.DATAFIM;
     var COD_TP_OPERACAO = parseInt(AF.Tipo_Operacao);
     var TIPO_OPERACAO = this.props.tipo_operacao;
-
+     
     return(
       <>
       {/* CRIAR COMPONENTE PARA ABSTRAIR ESSE BLOCO TODO*/}
@@ -53,7 +53,7 @@ class DadosDaPropostaTemplate extends Component {
           <Row className="mt-3">
             
 
-                {this.props.isCtrInss !== true &&
+                {this.props.isCtrInss !== true && AF.Averbador != 315 &&
                   <Col xs="12" sm="12">
                     <h5 className="text-center font-weight-bold">{AF.Averbador !== 20124 ? 'Empréstimo Consignado' : 'Auxílio Brasil'}</h5>
                     <h5 className="text-center font-weight-bold">Proposta  { CODIGO }</h5>
@@ -61,14 +61,12 @@ class DadosDaPropostaTemplate extends Component {
                   </Col>
                 }
 
-                {this.props.isCtrInss === true &&
+                {(this.props.isCtrInss === true || AF.Averbador == 315) && 
                   <Col xs="12" sm="12">
                     <h5 className="text-center mb-3 font-weight-bold">{ TIPO_OPERACAO }</h5>                
                     <h5 className="text-center font-weight-bold">Proposta  { CODIGO }</h5>
                   </Col>
                 }
-
-            
           </Row>
 
           <Row>
@@ -137,7 +135,7 @@ class DadosDaPropostaTemplate extends Component {
                       <p className="text-muted">Valor Liberado</p>
                     </Col>
                     <Col xs="6" sm="6" xm="12">
-                      <p className="font-weight-bold text-right"> { AF.Tipo_Operacao === 17 ? parseFloat(AF.BASECOMISSAO !== null ? AF.BASECOMISSAO : 0).toLocaleString('pt-BR', formatoValor) : parseFloat(AF.VLRAF !== null ? AF.VLRAF : 0).toLocaleString('pt-BR', formatoValor) } </p>
+                      <p className="font-weight-bold text-right"> { (AF.Tipo_Operacao === 17 || AF.Tipo_Operacao === 43 || AF.Tipo_Operacao === 44) ? parseFloat(AF.BASECOMISSAO !== null ? AF.BASECOMISSAO : 0).toLocaleString('pt-BR', formatoValor) : parseFloat(AF.VLRAF !== null ? AF.VLRAF : 0).toLocaleString('pt-BR', formatoValor) } </p>
                     </Col>
                   </Row>
 
@@ -169,16 +167,36 @@ class DadosDaPropostaTemplate extends Component {
                     : null
                   }
 
-                  <Row>
-                    <Col xs="6" sm="6" xm="12">
-                      <p className="text-muted">IOF</p>
-                    </Col>
-                    <Col xs="6" sm="6" xm="12">
-                      <p className="font-weight-bold text-right"> { parseFloat(AF.VLRIOF !== null ? AF.VLRIOF : 0).toLocaleString('pt-BR', formatoValor) } </p>
-                    </Col>
-                  </Row>
-
-                  {COD_TP_OPERACAO !== 33 &&
+                  {(AF.Averbador === 3 && (AF.taxa_cet !== null && AF.taxa_cet_anual !== null)) &&
+                    <div>
+                      <Row>
+                        <Col xs="6" sm="6" xm="12">
+                          <p className="text-muted">CET Mensal</p>
+                        </Col>
+                        <Col xs="6" sm="6" xm="12">
+                          <p className="font-weight-bold text-right"> {AF.taxa_cet.toFixed(2)}% a.m. </p>
+                        </Col>
+                      </Row>
+                        <Row>
+                          <Col xs="6" sm="6" xm="12">
+                            <p className="text-muted">CET Anual</p>
+                          </Col>
+                          <Col xs="6" sm="6" xm="12">
+                          <p className="font-weight-bold text-right"> {AF.taxa_cet_anual.toFixed(2)}% a.a. </p>
+                          </Col>
+                        </Row>                  
+                      </div>
+                    }
+                    <Row>
+                      <Col xs="6" sm="6" xm="12">
+                        <p className="text-muted">IOF</p>
+                      </Col>
+                      <Col xs="6" sm="6" xm="12">
+                        <p className="font-weight-bold text-right"> { parseFloat(AF.VLRIOF !== null ? AF.VLRIOF : 0).toLocaleString('pt-BR', formatoValor) } </p>
+                      </Col>
+                    </Row>
+                    
+                  {(COD_TP_OPERACAO !== 33 || COD_TP_OPERACAO !== 45) &&
                   <Row>
                     <Col xs="6" sm="6" xm="12">
                       <p className="text-muted">Seguro</p>
@@ -190,7 +208,7 @@ class DadosDaPropostaTemplate extends Component {
                     </Col>
                   </Row>
                   }
-                  {COD_TP_OPERACAO === 33 &&
+                  {(COD_TP_OPERACAO === 33 || COD_TP_OPERACAO === 45) &&
                   <Row>
                     <Col xs="6" sm="6" xm="12">
                       <p className="text-muted">Seguro</p>

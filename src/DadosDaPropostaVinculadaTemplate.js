@@ -63,7 +63,7 @@ class DadosDaPropostaVinculadaTemplate extends Component {
                 <Row>
                   <Col xs="6" sm="6" xm="12">
                     <label>Valor Liberado</label>
-                    <p className="font-weight-bold"> { AF.Tipo_Operacao === 17 ? parseFloat(AF.BASECOMISSAO !== null ? AF.BASECOMISSAO : 0).toLocaleString('pt-BR', formatoValor) : parseFloat(AF.VLRAF !== null ? AF.VLRAF : 0).toLocaleString('pt-BR', formatoValor) } </p>
+                    <p className="font-weight-bold"> { (AF.Tipo_Operacao === 17 || AF.Tipo_Operacao === 43 || AF.Tipo_Operacao === 44) ? parseFloat(AF.BASECOMISSAO !== null ? AF.BASECOMISSAO : 0).toLocaleString('pt-BR', formatoValor) : parseFloat(AF.VLRAF !== null ? AF.VLRAF : 0).toLocaleString('pt-BR', formatoValor) } </p>
                   </Col>
                   <Col xs="6" sm="6" xm="12">
                     <label>Parcelas</label>

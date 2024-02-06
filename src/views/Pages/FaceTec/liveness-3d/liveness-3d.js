@@ -20,16 +20,8 @@ class Liveness3D extends Component {
   }
 
   async componentDidMount() {
-
-    
-    //SampleApp.getProductionKey();
-
-
-
     SampleApp.getProductionKey(this.props.nome, this.props.cpf, this.props.nascimento, this.props.idExternoCliente);
     
-
-
     SampleApp.settCallback(
       async (appkey) => {
         const FormData = require("form-data");
@@ -38,7 +30,6 @@ class Liveness3D extends Component {
 
         await axios.post("https://app.factafinanceira.com.br/IntegracaoOiti/getResult",
           formData).then(async(response) => {
-
             this.props.getImagemOiti(response.data.imagem, true);
           })
           .catch((error) => {
@@ -56,7 +47,6 @@ class Liveness3D extends Component {
     (this.state.modalDados === false) ? this.setState({modalDados: true}) : this.setState({modalDados: false});
     this.setState({errorOiti : false});
       SampleApp.renewProductionKey(this.props.nome, this.props.cpf, this.props.nascimento, this.props.idExternoCliente);
-    
   }
   
   render() {

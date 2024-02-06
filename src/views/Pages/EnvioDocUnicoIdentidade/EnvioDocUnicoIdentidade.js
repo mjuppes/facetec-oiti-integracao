@@ -41,7 +41,9 @@ class EnvioDocUnicoIdentidade extends Component {
         responseProcess: false,
         retProcesso: false,
         errorProcessoUnico: false,
-        isScoreExcep: false
+        isScoreExcep: false,
+        cameraPromised : '',
+        isErroFaceMatch : false
       };
 
 
@@ -68,24 +70,34 @@ class EnvioDocUnicoIdentidade extends Component {
       this.setState({showCamera: false, errorUnico:  true, modalDados : true, msgErroUnico: message});
     }
 	
-	  setDocumentoUnico = async (imagem) => {
-      this.setState({imagem : imagem, showCamera : false, loadSpinner: true, mensagem : 'Verificando documentos aguarde...'});// trecho original descomentar depois
+	  setDocumentoUnico = async (imagem, cameraPromised) => {
+      this.setState({imagem : imagem, showCamera : false, loadSpinner: true, mensagem : 'Verificando documentos aguarde...', cameraPromised : cameraPromised});// trecho original descomentar depois
 
       if(this.props.isAnalfabetoEnvDoc === false) {
           let ret = await this.props.validaDocumento(this.state.imagem, this.state.tipoRg);
 
-          ret = true;
-          if(ret) {
-              if ((this.state.tipoRg === 'FRENTE' || this.state.tipoRg === 'FRENTE_NOVO') && ret === true) {
+          
+          console.log(ret);
+          console.log(ret.resultPromise);
+          console.log(ret.isErroFaceMatch);
+          this.setState({isErroFaceMatch : ret.isErroFaceMatch});
+
+          if(ret.resultPromise === true) {
+
+              //alert(this.state.tipoRg);
+              if ((this.state.tipoRg === 'FRENTE' || this.state.tipoRg === 'FRENTE_NOVO') && ret.resultPromise === true) {
                   this.setState({loadSpinner : false, sucessUnico : true});
               }
-              else if ((this.state.tipoRg === 'VERSO' || this.state.tipoRg === 'VERSO_NOVO') && ret === true) {
+              else if ((this.state.tipoRg === 'VERSO' || this.state.tipoRg === 'VERSO_NOVO') && ret.resultPromise === true) {
 
                   let retScore = await this.buscaScoreUnico(this.props.codigoAF, this.props.id_unico);
                   if(retScore) {
                        this.setState({etapaFinalizar : true, sucessUnico: true, loadSpinner: false});
                   }
               }
+
+
+              //alert(this.state.sucessUnico);
           } else {
             this.setState({loadSpinner: false, errorOCR:  true, modalDados : true,
               msgErroUnico: ' Não conseguimos realizar a validação do seu documento. Favor, realizar nova captura.'});
@@ -272,6 +284,10 @@ class EnvioDocUnicoIdentidade extends Component {
     }
 
 
+    closeModal = () => {
+      this.setState({errorUnico : false, showCamera : true, errorOCR : false})
+    }
+
     render() {
             const containerStyleSpinner = {
               'margin-top' : '50%',
@@ -311,6 +327,7 @@ class EnvioDocUnicoIdentidade extends Component {
                               tipoDocumento = {this.props.rg}
                               showMessageErrorUnico = {this.showMessageErrorUnico}
                               setDocumentoUnico = {this.setDocumentoUnico}
+                              cameraPromised = {this.state.cameraPromised}
                             />
                           </div>
                       }
@@ -340,7 +357,7 @@ class EnvioDocUnicoIdentidade extends Component {
                                   <Row className="mt-1">
                                       <Col md="12" lg="12" xl="12" xs="12" sm="12" className="text-center" style={colunaBtn}>
                                         <Button type="submit" color="primary" style={btn100} onClick={
-                                          () =>this.props.removeDocumento(this.state.tipoRg) } >Tirar nova foto</Button>
+                                          () =>this.state.isErroFaceMatch === true ? this.props.removeDocumento(this.state.tipoRg) : this.closeModal() } >Tirar nova foto</Button>
                                       </Col>
                                       <Col md="12" lg="12" xl="12" xs="12" sm="12" className="text-center">
                                         <Button color="secondary" style={btn100} onClick={() =>

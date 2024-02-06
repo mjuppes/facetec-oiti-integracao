@@ -495,7 +495,6 @@ class CedulaFactaSiapeCartao extends Component {
       var COD_TP_OPERACAO = parseInt(this.state.obj_proposta.Tipo_Operacao);
       var TIPO_OPERACAO = this.state.tipoOperacao !== undefined ? this.state.tipoOperacao.nome : '';
 
-      
       var DATA_INI_PROPOSTA = this.state.obj_proposta.DATAINICIO;
       var DATA_FIM_PROPOSTA = this.state.obj_proposta.DATAFIM;
     }
@@ -596,8 +595,9 @@ class CedulaFactaSiapeCartao extends Component {
                       ) : null
                     }
 
-                    <DadosLimiteCreditoBlocoTemplate proposta={AF} codigo_af ={atob(this.state.codigoAF64)} tipo_operacao={TIPO_OPERACAO} cod_tipo_operacao={COD_TP_OPERACAO}/>
-
+                    { ([45,46,47,48].indexOf(parseInt(TIPO_OPERACAO)) === -1) &&
+                      <DadosLimiteCreditoBlocoTemplate proposta={AF} codigo_af ={atob(this.state.codigoAF64)} tipo_operacao={TIPO_OPERACAO} cod_tipo_operacao={COD_TP_OPERACAO}/>
+                    }
                     
                     <Card className="border-white shadow" style={{borderRadius: '8px'}}>
                       <CardBody className="text-left">

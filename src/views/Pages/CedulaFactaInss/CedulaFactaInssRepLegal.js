@@ -161,7 +161,7 @@ class CedulaFactaInssRepLegal extends Component {
       }
       else {
         //this.state.proximoLink = '/tipo-documento/'+this.props.match.params.propostaId; // Rota antiga para já tirar foto dos DOCS
-        if (parseInt(this.state.tipoOperacao.Codigo) === 33 || parseInt(this.state.tipoOperacao.Codigo) === 36) {
+        if (parseInt(this.state.tipoOperacao.Codigo) === 33 || parseInt(this.state.tipoOperacao.Codigo) === 36 || parseInt(this.state.tipoOperacao.Codigo) === 45 || parseInt(this.state.tipoOperacao.Codigo) === 47) {
           this.state.proximoLink = '/facta-inss-seguro/'+this.props.match.params.propostaId;
         } else {
           this.state.proximoLink = '/declaracao-de-residencia/'+this.props.match.params.propostaId;
@@ -545,7 +545,7 @@ class CedulaFactaInssRepLegal extends Component {
                             <p className="font-weight-bold text-capitalize">{ this.state.obj_proposta !== [] && AF.TIPOBENEFICIO !== '' && this.state.espBeneficio[0] !== undefined ? AF.TIPOBENEFICIO + ' - ' + this.state.espBeneficio[0].NOME.toLowerCase() : ' - ' }</p>
                           </Col>
                         </Row>
-                        {(parseInt(AF.Tipo_Operacao) === 35 || parseInt(AF.Tipo_Operacao) === 36 || parseInt(AF.Tipo_Operacao) === 40 || parseInt(AF.Tipo_Operacao) === 42) &&
+                        {([35,37,43,44,47,48].indexOf(parseInt(AF.Tipo_Operacao)) !== -1) &&
                           <Row>
                             <Col xs="12" sm="12" xm="12">
                               <label>Nome Representante Legal</label>
@@ -596,8 +596,9 @@ class CedulaFactaInssRepLegal extends Component {
                         )
                       ) : null
                     }
-
-                    <DadosLimiteCreditoBlocoTemplate proposta={AF} codigo_af ={atob(this.state.codigoAF64)} tipo_operacao={TIPO_OPERACAO} cod_tipo_operacao={COD_TP_OPERACAO}/>
+                    {([45,46,47,48].indexOf(COD_TP_OPERACAO) === -1) &&
+                      <DadosLimiteCreditoBlocoTemplate proposta={AF} codigo_af ={atob(this.state.codigoAF64)} tipo_operacao={TIPO_OPERACAO} cod_tipo_operacao={COD_TP_OPERACAO}/>
+                    }
 
                     { AF.DESBLOQUEAR_BENEFICIO === "S"
                       ? <>
@@ -1017,7 +1018,7 @@ class CedulaFactaInssRepLegal extends Component {
                           : null
                         }
 
-                        { AF.Tipo_Operacao === 17
+                        { (AF.Tipo_Operacao === 17 || AF.Tipo_Operacao === 43 || AF.Tipo_Operacao === 44)
                           ? (
                             <>
                               <Card className="border-white shadow" style={{borderRadius: '8px'}}>
@@ -1143,7 +1144,7 @@ class CedulaFactaInssRepLegal extends Component {
                             </Col>
                           </Row>
 
-                          { [13, 14, 17, 18, 27].indexOf(COD_TP_OPERACAO) !== -1
+                          { [13, 14, 17, 18, 27, 43, 44].indexOf(COD_TP_OPERACAO) !== -1
                             ? <Row>
                                 <Col xs="12" sm="12" xm="12">
                                   <label>Seguro Prestamista Proposta { CODIGO }</label>

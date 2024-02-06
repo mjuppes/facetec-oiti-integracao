@@ -6,6 +6,7 @@ import Spinner from '../../Spinner';
 import CameraUnico from '../CameraUnico/CameraUnico';
 
 import axios from 'axios';
+//import { log } from 'console';
 
 const URL_API = 'https://app.factafinanceira.com.br/api3';
 const URL_API_BIO = 'https://app.factafinanceira.com.br/API3PROD';
@@ -25,12 +26,15 @@ class EnvioSelfieUnico extends Component {
         loadSpinner: false,
         tipoDocumento: '',
         showCamera: true,
-        errorUnico: false
+        errorUnico: false,
+        emAnalise : false,
+        processUnico: false,
+        cameraPromised : ''
       };
     }
 
-    getImagemUnico = (imagem) => {
-      this.setState({ imagem : 'data:image/jpeg;base64,' + imagem.base64, encrypted : imagem.encrypted}); //retirar comentario
+    getImagemUnico = (imagem, cameraPromised) => {
+      this.setState({ imagem : 'data:image/jpeg;base64,' + imagem.base64, encrypted : imagem.encrypted, cameraPromised : cameraPromised}); //retirar comentario
       this.handleCredencial();
     }
 
@@ -52,18 +56,22 @@ class EnvioSelfieUnico extends Component {
         if(this.props.id_inclusao === false) {
           this.getIdUser(response.data.access_token, this.state.imagem);
         } else {
+
+          if (this.props.isTokenBiometrico === true && this.state.processUnico === false) {
             let reTokenBio = await this.getTokenBiometrico();
             let setResponseToken = await this.gravaReponseTokenBio();
 
             if (this.state.authenticated === false || this.state.authenticated === undefined) { //se não existir na unico
-                this.getIdUser(response.data.access_token, this.state.imagem);
+
+              this.setState({errorUnico :  true, loadSpinner : false, modalDados : true,processUnico : true, msgErroUnico : 'Centralize o rosto na área de captura. Para tentar o processo novamente clique no "BOTÃO ABAIXO"!'});
+
             } else {
-                this.setState({loadSpinner : false, sucessUnico: true});
+               this.setState({loadSpinner : false, sucessUnico: true});
             }
+          } else if (this.props.isTokenBiometrico === false ||  this.state.processUnico === true) {
+            this.getIdUser(response.data.access_token, this.state.imagem);
+          }
         }
-
-
-
       })
       .catch((error) => {
         console.log(error)
@@ -83,7 +91,6 @@ class EnvioSelfieUnico extends Component {
         URL_API_BIO + "/get_token_biometrico",
         formData).then((response) => {
           this.setState({ authenticated : response.data.authenticated });
-
           
         })
         .catch((error) => {
@@ -134,23 +141,30 @@ class EnvioSelfieUnico extends Component {
       await axios.post(
         URL_API + "/get_id_user_unico",
         formData).then((response) => {
-          let msgErroUnico = (response.data.msg != undefined) ? response.data.msg.replaceAll('Erro API -', '') : 'Erro ao tirar Selfie tente novamente';
+
+          let msgErroUnico = (response.data.msg != undefined) ? response.data.msg.replaceAll('Erro API -', '') : 'Centralize o rosto na área de captura. Para tentar o processo novamente clique no "BOTÃO ABAIXO"!!';
           if (response.data.error === true || Number.isInteger(response.data.id_tabela_unico) !== true || parseInt(response.data.id_tabela_unico) === 0) {
               this.setState({errorUnico :  true, loadSpinner : false, modalDados : true, msgErroUnico : msgErroUnico});
               return;
           }
 
           this.setState({id_unico : response.data.id_unico, id_tabela_unico : response.data.id_tabela_unico, access_token : access_token});
-          this.getProcessoUnico()
+          this.getProcessoUnico(true);
         })
         .catch((error) => {
+
+
+          this.setState({errorUnico :  true, loadSpinner : false, modalDados : true, msgErroUnico : 'Centralize o rosto na área de captura. Para tentar o processo novamente clique no "BOTÃO ABAIXO"!!'});
+
           console.log(error);
           console.log('error', error+' teste agora');
         });
     }
 
-    getProcessoUnico = async () => {
-      this.setState( { mensagem : 'Aguarde ainda estamos processando...' } );
+    getProcessoUnico = async (statusAnalise, mensagem) => {
+      mensagem = (mensagem === undefined) ? 'Aguarde ainda estamos processando...' : mensagem;
+
+      this.setState( { mensagem : mensagem } );
 
       const FormData = require('form-data');
       const formData = new FormData();
@@ -160,24 +174,42 @@ class EnvioSelfieUnico extends Component {
       formData.append('id_tabela_unico', this.state.id_tabela_unico);
       formData.append('tipo_operacao', this.props.tipo_operacao);
       formData.append('codVinculado', this.props.codVinculado);
+      formData.append('statusAnalise', statusAnalise);
 
       await  axios.post(
         URL_API + "/get_processo_unico",
         formData).then((response) => {
 
-            if (parseInt(response.data.liveness) === 2 || parseInt(response.data.ocrcode) === 2) {
-              this.setState({
-                loadSpinner: false, mensagem: '', 
-                errorProcessoUnico: true,
-                msgErroUnico : 'Houve erro ao processar Selfie, por favor enviar novamente!'});
+
+            if(parseInt(response.data.status) === 2 || response.data.status === "2") {
+              setTimeout(() => {
+                this.getProcessoUnico(false, 'Seu processo está em analise pode demorar alguns instantes...');
+              },  1000);
             } else {
-              this.setState({loadSpinner : false, sucessUnico: true});
+              if(response.data.emAnalise === true) {
+                  this.setState({errorUnico :  true, loadSpinner : false, modalDados : true, msgErroUnico : 'Sua proposta está em analise por favor tente mais tarde!', emAnalise : true});
+              } else {
+                let score = parseInt(response.data.score);
+
+                if ((score === 0 || score < 0) && this.props.existDocSimply === true) {
+                   this.props.encerraProposta();
+                   return;
+                } else {
+                  if (parseInt(response.data.liveness) === 2 || parseInt(response.data.ocrcode) === 2) {
+                    this.setState({
+                      loadSpinner: false, mensagem: '', 
+                      errorProcessoUnico: true,
+                      msgErroUnico : 'Houve erro ao processar Selfie, por favor enviar novamente!'});
+                  } else {
+                    this.setState({loadSpinner : false, sucessUnico: true});
+                  }
+                }
+              }
             }
       })
       .catch((error) => {
       console.log('error', error);
       });
-
       
     }
 
@@ -255,6 +287,7 @@ class EnvioSelfieUnico extends Component {
                             tipoDocumento = 'SELFIE'
                             showMessageErrorUnico = {this.showMessageErrorUnico}
                             getImagemUnico = {this.getImagemUnico}
+                            cameraPromised = {this.state.cameraPromised}
                         />
                     </div>
                   }
@@ -269,13 +302,22 @@ class EnvioSelfieUnico extends Component {
                                 <i className="fa fa-times-circle-o align-self-center h2"></i>
                               </Col>
                               <Col md="10" lg="10" xl="10" xs="10" sm="10" className="text-left pl-0">
-                                <p className="align-self-center">{this.state.msgErroUnico}!!</p>
+                                <p className="align-self-center">{this.state.msgErroUnico}</p>
                               </Col>
                             </Row>
                             <Row className="mt-1">
-                              <Col md="12" lg="12" xl="12" xs="12" sm="12" className="text-center">
-                                <Button color="success" onClick={this.props.onClick}>Ok</Button>
-                              </Col>
+                                {this.state.authenticated === false ? 
+                                <>
+                                    <Col md="12" lg="12" xl="12" xs="12" sm="12" className="text-center">
+                                      <Button color="success" onClick={() =>  this.setState({errorUnico : false, showCamera : true}) /*this.props.changeProcessoUnico()*/  /*window.location.reload()*/}>Clique Aqui</Button>
+                                    </Col>                                    
+                                </> :
+                                <>
+                                  <Col md="12" lg="12" xl="12" xs="12" sm="12" className="text-center">
+                                    <Button color="success" onClick={() => (this.state.emAnalise === false)  ? this.props.onClick() : window.location.reload()}>Clique Aqui</Button>                                    
+                                  </Col>                                    
+                                </>
+                                }
                             </Row>
                           </ModalBody>
                         </Modal>
@@ -315,11 +357,26 @@ class EnvioSelfieUnico extends Component {
                             <img src={ this.state.imagem } alt="Selfie" style={ isMobile === true ? tamanhoImgMobile : tamanhoImgDesk} />
                           </Col>
                           <Col className="text-center" md="12" lg="12" xs="12" sm="12">
-                              <Link className="btn btn-outline-primary btn-block btn-lg font-weight-bold mt-2"
-                                onClick={() => this.props.getStateSelfie(this.state.access_token, this.state.id_unico, this.state.imagem, this.state.id_tabela_unico)}
-                                to="#">
-                                Ir para próxima etapa
-                              </Link>
+
+
+                              {this.props.existDocSimply === false ? 
+                                <>
+                                  <Link className="btn btn-outline-primary btn-block btn-lg font-weight-bold mt-2"
+                                    onClick={() => this.props.getStateSelfie(this.state.access_token, this.state.id_unico, this.state.imagem, this.state.id_tabela_unico)}
+                                    to="#">
+                                    Ir para próxima etapa
+                                  </Link>
+                                </> :
+                                <>
+                                  <Link className="btn btn-outline-primary btn-block btn-lg font-weight-bold mt-2"
+                                    onClick={() => this.props.setDocSimplyEnviado(this.state.imagem)}
+                                    to="#">
+                                    Ir para próxima etapa
+                                  </Link>                                   
+                                </>
+                                }
+
+
                           </Col>
                         </Row> 
                       </CardBody>

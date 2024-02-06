@@ -41,7 +41,9 @@ class EnvioDocumentoUnicoCNH extends Component {
           responseScore: false,
           responseProcess: false,
           retProcesso: false,
-          isScoreExcep: false
+          isScoreExcep: false,
+          cameraPromised : '',
+          isErroFaceMatch : false
         };
 
         if(this.props.isPendencia != 'S') {
@@ -67,8 +69,8 @@ class EnvioDocumentoUnicoCNH extends Component {
       this.setState({showCamera: false, errorUnico:  true, modalDados : true, msgErroUnico: message});
     }
 	
-	  setDocumentoUnico = async (imagem) => {
-      this.setState({ imagem : imagem, showCamera : false, loadSpinner: true, mensagem : 'Verificando documentos aguarde...' });
+	  setDocumentoUnico = async (imagem, cameraPromised) => {
+      this.setState({ imagem : imagem, showCamera : false, loadSpinner: true, mensagem : 'Verificando documentos aguarde...' , cameraPromised : cameraPromised});
 
       if(this.props.isAnalfabetoEnvDoc === false) {
 
@@ -77,8 +79,14 @@ class EnvioDocumentoUnicoCNH extends Component {
         if(retScore) {
           let ret = await this.props.validaDocumento(imagem, this.props.cnh);
 
-          ret = true;
-          if(ret === false) {
+          console.log(ret.resultPromise);
+          console.log(ret.isErroFaceMatch);
+          console.log(ret);
+
+
+          this.setState({isErroFaceMatch : ret.isErroFaceMatch});
+
+          if(ret.resultPromise === false) {
             this.setState({loadSpinner: false, errorOCR:  true, modalDados : true, 
               msgErroUnico: ' Não conseguimos realizar a validação do seu documento. Favor, realizar nova captura.'});
           } else {
@@ -234,6 +242,10 @@ class EnvioDocumentoUnicoCNH extends Component {
       this.props.setDocumento();
     }
 
+    closeModal = () => {
+      this.setState({errorUnico : false, showCamera : true, errorOCR : false})
+    }
+
     render() {
             const containerStyle = {
                 "width": "400px",
@@ -278,6 +290,7 @@ class EnvioDocumentoUnicoCNH extends Component {
                               tipoDocumento = {this.props.cnh}
                               showMessageErrorUnico = {this.showMessageErrorUnico}
                               setDocumentoUnico = {this.setDocumentoUnico}
+                              cameraPromised = {this.state.cameraPromised}
                             />
                           </div>
                       }
@@ -308,7 +321,7 @@ class EnvioDocumentoUnicoCNH extends Component {
                                   <Row className="mt-1">
                                       <Col md="12" lg="12" xl="12" xs="12" sm="12" className="text-center" style={colunaBtn}>
                                         <Button type="submit" color="primary" style={btn100}
-                                        onClick={() =>this.props.removeDocumento(this.props.cnh) } >Tirar nova foto</Button>
+                                        onClick={() =>this.state.isErroFaceMatch === true ?  this.props.removeDocumento(this.props.cnh) : this.closeModal() } >Tirar nova foto</Button>
                                       </Col>
                                       <Col md="12" lg="12" xl="12" xs="12" sm="12" className="text-center">
                                         <Button color="secondary" style={btn100} onClick={() =>

@@ -1,0 +1,6 @@
+{
+  "name": "CedulaFactaGovMg",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./CedulaFactaGovMg.js"
+}

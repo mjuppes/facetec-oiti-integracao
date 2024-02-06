@@ -58,7 +58,8 @@ class DocumentosUnico extends Component {
                         </Col>
                       </Row>
                     }
-                    {(( /*this.props.averbador === 20095 ||*/  this.props.averbador === 390 || this.props.averbador === 20124) && this.props.isAnalfabetoEnvDoc === false) &&
+                    {(( (this.props.averbador === 20095 &&  (this.props.isFranquia === true || parseInt(this.props.corretorClassificacao) === 1 || parseInt(this.props.corretorClassificacao) === 2))  ||  this.props.averbador === 390 || 
+                        (this.props.averbador === 3 && (this.props.tipo_operacao === 35 || this.props.tipo_operacao === 37)) ) && this.props.isAnalfabetoEnvDoc === false) &&
                       <Row> 
                         <Col xs="12" sm="12">
                           <Link className="btn btn-outline-primary btn-block btn-lg font-weight-bold mt-2" 

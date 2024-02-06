@@ -30,6 +30,8 @@ class EnvioAudioUnico extends Component {
       this.w = this.w.bind(this);
 
       let _orgao = "INSS";
+      let _do = "";
+      let _contracheque = "benefício";
       if (this.props.averbador === 15) {
         _orgao = "SIAPE";
       }
@@ -45,8 +47,40 @@ class EnvioAudioUnico extends Component {
       else if (this.props.averbador === 100) {
         _orgao = " do PODER JUDICIÁRIO";
       }
+      else if (this.props.averbador === 10226) {
+        _do = "da";
+        _contracheque = " contracheque ";
+        _orgao = " PREFEITURA DE PORTO ALEGRE";
+      }
+      else if (this.props.averbador === 20135) {
+        _do = "da";
+        _contracheque = " contracheque ";
+        _orgao = " PREVIMPA - PREFEITURA DE PORTO ALEGRE";
+      }
+      else if (this.props.averbador === 315) {
+        _do = "do";
+        _contracheque = " contracheque ";
+        _orgao = " GOVERNO DO ESTADO DE MINAS GERAIS";
+      }
+      else if (this.props.averbador === 17) {
+        _do = "do";
+        _contracheque = " contracheque ";
+        _orgao = " GOVERNO DE SANTA CATARINA";
+      }
+      else if (this.props.averbador === 292) {
+        _do = "do";
+        _contracheque = " contracheque ";
+        _orgao = " GOVERNO DO PARANA";
+      }
+      else if (this.props.averbador === 15) {
+        _do = "do";
+        _contracheque = " contracheque ";
+        _orgao = " SIAPE";
+      }
+  
+      let isRepresentanteLegal = [35,36,37,43,44];
 
-      let scriptAudio = 'Eu, <span class="font-weight-bold">' + ((this.props.tipo_operacao == 35 || this.props.tipo_operacao == 36 || this.props.tipo_operacao == 37) ?  this.props.nomeRepresentanteLegal + ' representante do beneficiário ' : this.props.nomeCliente) + '</span>, ';
+      let scriptAudio = 'Eu, <span class="font-weight-bold">' + ((isRepresentanteLegal.indexOf(this.props.tipo_operacao) !== -1 ) ?  this.props.nomeRepresentanteLegal + ' representante do beneficiário ' : this.props.nomeCliente) + '</span>, ';
       if (this.props.averbador === 20095) { // NOVO DIGITAL 
 
         scriptAudio += 'confirmo a contratação de antecipação de saque aniversário FGTS contratado junto a <span class="font-weight-bold">FACTA FINANCEIRA</span>, ';
@@ -79,15 +113,17 @@ class EnvioAudioUnico extends Component {
               scriptAudio += 'instituição financeira no prazo de <span class="font-weight-bold">30</span> dias após diminuição das ';
               scriptAudio += 'restrições de circulação, impostas pelo <span class="font-weight-bold">Decreto 55.240/2020</span>, atualizado.';
             }*/
-          } else if (this.props.averbador === 3 && this.props.tipo_operacao === 33) { // CARTÃO BENEFÍCIO
+          } else if (this.props.averbador === 3 && (this.props.tipo_operacao === 33 || this.props.tipo_operacao === 45)) { // CARTÃO BENEFÍCIO
             scriptAudio += 'confirmo a contratação do  <span class="font-weight-bold">CARTÃO</span> ';
             scriptAudio += 'com a opção de saque no valor <span class="font-weight-bold">' + this.props.valorProposta + '</span>, ';
             scriptAudio += 'a ser pago em <span class="font-weight-bold">' + this.props.numeroPmt  + '</span> parcelas fixas mensais ';
             scriptAudio += 'de <span class="font-weight-bold">' + this.props.valorPmt + '</span>, ';
-            scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">benefício</span>.';
+
+
+            scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">'+_contracheque+'</span>.';
           }
           else if (this.props.tipo_operacao === 13) { // NOVO DIGITAL
-            scriptAudio += 'confirmo a contratação do empréstimo consignado ' + (this.props.averbador === 10 ? 'contratado junto a <span class="font-weight-bold">FACTA FINANCEIRA</span>, ' : '<span class="font-weight-bold">' + _orgao + '</span> ') + '';
+            scriptAudio += 'confirmo a contratação do empréstimo consignado ' + (this.props.averbador === 10 ? 'contratado junto a <span class="font-weight-bold">FACTA FINANCEIRA</span>, ' : _do+'<span class="font-weight-bold">' + _orgao + '</span> ') + '';
             scriptAudio += 'no valor de <span class="font-weight-bold">' + this.props.valorProposta + '</span>, ';
             scriptAudio += 'a ser pago em <span class="font-weight-bold">' + this.props.numeroPmt + '</span> parcelas fixas mensais ';
             scriptAudio += 'de <span class="font-weight-bold">' + this.props.valorPmt + '</span>, ';
@@ -95,23 +131,23 @@ class EnvioAudioUnico extends Component {
             if(this.props.averbador == 10) {
                 scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em minha  <span class="font-weight-bold">folha de pagamento</span>';  
             } else {
-               scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">benefício</span>';
+               scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">'+_contracheque+'</span>';
             }
 
             scriptAudio += this.props.averbador === 1 || this.props.averbador === 30 || this.props.averbador === 100 ? ', e autorizo a averbação em 120 meses.' : '.';
           } else if (this.props.tipo_operacao === 14 || this.props.tipo_operacao === 18) { // REFIN DIGITAL / REFIN DA PORT DIGITAL
-            scriptAudio += 'confirmo a contratação de refinanciamento do meu empréstimo consignado ' + (this.props.averbador === 10 ? 'contratado junto a <span class="font-weight-bold">FACTA FINANCEIRA</span>, ' : '<span class="font-weight-bold">' + _orgao + '</span> ') + '';
+            scriptAudio += 'confirmo a contratação de refinanciamento do meu empréstimo consignado ' + (this.props.averbador === 10 ? 'contratado junto a <span class="font-weight-bold">FACTA FINANCEIRA</span>, ' : _do+'<span class="font-weight-bold">' + _orgao + '</span> ') + '';
             scriptAudio += 'no valor de <span class="font-weight-bold">' + this.props.valorProposta + '</span>, ';
             scriptAudio += 'a ser pago em <span class="font-weight-bold">' + this.props.numeroPmt  + '</span> parcelas fixas mensais ';
             scriptAudio += 'de <span class="font-weight-bold">' + this.props.valorPmt + '</span>, ';
-            scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">benefício</span>';
+            scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">'+_contracheque+'</span>';
             scriptAudio += this.props.averbador === 1 || this.props.averbador === 30 || this.props.averbador === 100 ? ', e autorizo a averbação em 120 meses.' : '.';
-          } else if (this.props.tipo_operacao === 17) { // PORTABILIDADE CIP
-            scriptAudio += 'confirmo a contratação de portabilidade de crédito do meu empréstimo consignado ' + (this.props.averbador === 10 ? 'contratado junto a <span class="font-weight-bold">FACTA FINANCEIRA</span>, ' : '<span class="font-weight-bold">' + _orgao + '</span> ') + '';
+          } else if (this.props.tipo_operacao === 17 || this.props.tipo_operacao === 43 || this.props.tipo_operacao === 44) { // PORTABILIDADE CIP
+            scriptAudio += 'confirmo a contratação de portabilidade de crédito do meu empréstimo consignado ' + (this.props.averbador === 10 ? 'contratado junto a <span class="font-weight-bold">FACTA FINANCEIRA</span>, ' : _do+'<span class="font-weight-bold">' + _orgao + '</span> ') + '';
             scriptAudio += 'de número <span class="font-weight-bold">' + this.props.contrato + '</span>, ';
             scriptAudio += 'para a <span class="font-weight-bold">FACTA FINANCEIRA</span>.';
           } else if (this.props.tipo_operacao === 28) { // PORTABILIDADE MANUAL
-            scriptAudio += 'confirmo a contratação de empréstimo consignado ' + (this.props.averbador === 10 ? 'contratado junto a <span class="font-weight-bold">FACTA FINANCEIRA</span>, ' : '<span class="font-weight-bold">' + _orgao + '</span> ') + '';
+            scriptAudio += 'confirmo a contratação de empréstimo consignado ' + (this.props.averbador === 10 ? 'contratado junto a <span class="font-weight-bold">FACTA FINANCEIRA</span>, ' : _do+'<span class="font-weight-bold">' + _orgao + '</span> ') + '';
             scriptAudio += 'no valor de <span class="font-weight-bold">' + this.props.valorProposta + '</span>, ';
             scriptAudio += 'a ser pago em <span class="font-weight-bold">' + this.props.numeroPmt  + '</span> parcelas fixas mensais ';
             scriptAudio += 'de <span class="font-weight-bold">' + this.props.valorPmt + '</span>, ';
@@ -119,11 +155,11 @@ class EnvioAudioUnico extends Component {
             if(this.props.averbador == 10) {
               scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em minha  <span class="font-weight-bold">folha de pagamento</span>';  
             } else {
-              scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">benefício</span>';
+              scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">'+_contracheque+'</span>';
             }
 
-          } else if (this.props.tipo_operacao === 11) { // CARTÃO DIGITAL
-            scriptAudio += 'confirmo a contratação de cartão consignado ' + (this.props.averbador === 10 ? 'contratado junto a <span class="font-weight-bold">FACTA FINANCEIRA</span>, ' : '<span class="font-weight-bold">' + _orgao + '</span> ') + '';
+          } else if (this.props.tipo_operacao === 11 || this.props.tipo_operacao === 46) { // CARTÃO DIGITAL
+            scriptAudio += 'confirmo a contratação de cartão consignado ' + (this.props.averbador === 10 ? 'contratado junto a <span class="font-weight-bold">FACTA FINANCEIRA</span>, ' : _do+'<span class="font-weight-bold">' + _orgao + '</span> ') + '';
             scriptAudio += 'com saque de <span class="font-weight-bold">' + this.props.valorProposta + '</span>, ';
             scriptAudio += 'a ser pago em <span class="font-weight-bold">' + this.props.numeroPmt  + '</span> parcelas fixas mensais ';
             scriptAudio += 'de <span class="font-weight-bold">' + this.props.valorPmt + '</span>, ';
@@ -131,7 +167,7 @@ class EnvioAudioUnico extends Component {
             if(this.props.averbador == 10) {
               scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em minha  <span class="font-weight-bold">folha de pagamento</span>';  
             } else {
-              scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">benefício</span>';
+              scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">'+_contracheque+'</span>';
             }
 
           } else if (this.props.tipo_operacao === 29) { // REFIN CARTÃO DIGITAL
@@ -139,13 +175,13 @@ class EnvioAudioUnico extends Component {
             scriptAudio += 'com saque de <span class="font-weight-bold">' + this.props.valorProposta + '</span>, ';
             scriptAudio += 'a ser pago em <span class="font-weight-bold">' + this.props.numeroPmt  + '</span> parcelas fixas mensais ';
             scriptAudio += 'de <span class="font-weight-bold">' + this.props.valorPmt + '</span>, ';
-            scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">benefício</span>.';
+            scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">'+_contracheque+'</span>.';
           } else {
             scriptAudio += 'confirmo a contratação do empréstimo <span class="font-weight-bold">CONSIGNADO</span> ';
             scriptAudio += 'no valor de <span class="font-weight-bold">' + this.props.valorProposta + '</span>, ';
             scriptAudio += 'em <span class="font-weight-bold">' + this.props.numeroPmt  + '</span> parcelas fixas mensais ';
             scriptAudio += 'de <span class="font-weight-bold">' + this.props.valorPmt + '</span>, ';
-            scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">benefício</span>.';
+            scriptAudio += 'a ' + (this.props.numeroPmt  > 1 ? 'serem descontadas' : 'ser descontada') + ' em meu <span class="font-weight-bold">'+_contracheque+'</span>.';
           }
 
           if (this.props.averbador === 3 && this.props.vlrseguro > 0  && this.props.isComplementar === true) { // SEGURO PRESTAMISTA

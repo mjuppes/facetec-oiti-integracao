@@ -59,9 +59,6 @@ class Digital extends Component {
     localStorage.setItem('@app-factafinanceira-formalizacao/exibirTimeline', 1);
     localStorage.setItem('@app-factafinanceira-formalizacao/RETORNO_OITI_LOG', '');
 
-
-    //this.getLiberaV6();
-
   }
 
   async componentDidMount() {
@@ -140,24 +137,17 @@ class Digital extends Component {
     return false;
     */
 
-
-    let dia = new Date().getDate();
-    dia = ("0" + dia).slice(-2);
-    let mes = new Date().getMonth()+1;
-    mes = ("0" + mes).slice(-2);
-
-    let ano = new Date().getFullYear();
-    let token_af = this.state.codigoAF64+'_token_'+ano + '-' + mes + '-' + dia;
-
     await axios
-    .get('https://app.factafinanceira.com.br/proposta/get_dados_proposta?codigo=' + btoa(this.state.codigoAF64)+'&token='+md5(token_af) + '&ambiente=prod')
+    .get('https://app.factafinanceira.com.br/proposta/get_dados_proposta?codigo=' + btoa(this.state.codigoAF64))
     .then(res => {
       console.log(res.data);
-      this.setState({
-        dadosProposta: res.data,
-        dadosCliente: res.data.CLIENTE,
-        carregando: false
-      });
+
+        this.setState({
+          dadosProposta: res.data,
+          dadosCliente: res.data.CLIENTE, 
+          statusUnico: parseInt(res.data.STATUSUNICO), 
+          carregando: false
+        });
 
       if (res.data.RETORNO_OITI_LOG !== undefined && res.data.RETORNO_OITI_LOG !== "") {
         localStorage.setItem('@app-factafinanceira-formalizacao/RETORNO_OITI_LOG', res.data.RETORNO_OITI_LOG);
@@ -272,7 +262,7 @@ class Digital extends Component {
           return false;
         }else*/
 
-        let array_averbadores = [20095,3,1,15,30,390,10226,20124,23,10];
+        let array_averbadores = [20095,3,1,15,30,390,10226,20124,23,10, 315,17,292,20135,710];
 
         if(array_averbadores.indexOf(int_averbador) === -1 ) {
           this.setState({ carregando : true });
@@ -331,21 +321,6 @@ class Digital extends Component {
 
 
 
-  getLiberaV6 =  async () => { 
-
-    await axios
-    .get('https://app.factafinanceira.com.br/proposta/get_dados_liberaV6')
-    .then(res => {  
-      res.data.map((dados, index) => (
-        
-       this.state.lojasLiberar.push(dados.CODIGO)
-      ));
-
-      this.state.lojasLiberar.push(31276);
-      this.state.lojasLiberar.push(19778);
-    })
-    .catch(error => console.log(error));
-  };
 
 
   isDispositivoPc = (dadosDispositivos) => {
@@ -550,7 +525,7 @@ class Digital extends Component {
                           : null
                         }
 
-                        {this.state.isErrorGeo === false &&
+                        {(this.state.isErrorGeo === false && this.state.statusUnico !== 2) &&
                           <Col md={{size: isMobile ? 10 : 6, offset: isMobile ? 1 : 0}}>
                             { this.state.liberaFormalizacao.indexOf(DADOS_AF.TIPOANALISE) !== -1 && (DADOS_AF.nometabela === null || DADOS_AF.nometabela === '')
                               ? <>
@@ -590,6 +565,7 @@ class Digital extends Component {
                                             state: {
                                               navegacao: true,
                                               averbador: DADOS_AF.Averbador,
+                                              token: DADOS_AF.token,
                                               DADOS_PROPOSTA_DIGITAL: DADOS_AF,
                                               dataHoraPrimeiraTela: [new Date().getFullYear(), new Date().getMonth()+1, new Date().getDate()].join('-')+' '+[new Date().getHours(),new Date().getMinutes(),new Date().getSeconds()].join(':'),
                                               geoInicial: this.state.localizacaoInicial
@@ -608,6 +584,7 @@ class Digital extends Component {
                                                       state: {
                                                         navegacao: true,
                                                         averbador: DADOS_AF.Averbador,
+                                                        token: DADOS_AF.token,
                                                         DADOS_PROPOSTA_DIGITAL: DADOS_AF,
                                                         dataHoraPrimeiraTela: [new Date().getFullYear(), new Date().getMonth()+1, new Date().getDate()].join('-')+' '+[new Date().getHours(),new Date().getMinutes(),new Date().getSeconds()].join(':'),
                                                         geoInicial: this.state.localizacaoInicial
@@ -627,6 +604,7 @@ class Digital extends Component {
                                                       state: {
                                                         navegacao: true,
                                                         averbador: DADOS_AF.Averbador,
+                                                        token: DADOS_AF.token,
                                                         DADOS_PROPOSTA_DIGITAL: DADOS_AF,
                                                         dataHoraPrimeiraTela: [new Date().getFullYear(), new Date().getMonth()+1, new Date().getDate()].join('-')+' '+[new Date().getHours(),new Date().getMinutes(),new Date().getSeconds()].join(':'),
                                                         geoInicial: this.state.localizacaoInicial
@@ -751,9 +729,11 @@ class Digital extends Component {
                           </Col>
                         }
 
-                        {this.state.isErrorGeo === true  && this.state.clicouErrorGeo === false &&
+                        {((this.state.isErrorGeo === true  && this.state.clicouErrorGeo === false) || this.state.statusUnico === 2) &&
                           <Col md={{size: isMobile ? 10 : 6, offset: isMobile ? 1 : 0}}>
 
+
+                            {this.state.isErrorGeo  === true  &&
                             <Card className="border-white shadow" style={{borderRadius: '8px'}}>
                                     <CardBody>
                                       <Row className="mt-3 text-justify">
@@ -788,7 +768,27 @@ class Digital extends Component {
                                         </Col>
                                       </Row>
                                    </CardBody>
+                            
                               </Card>
+                              }
+
+                              {(this.state.statusUnico  === 2)  &&
+
+                                  <Card className="border-white shadow" style={{borderRadius: '8px'}}>
+                                  <CardBody>
+                                      <Row className="mt-3 text-justify">
+                                        <Col xs="12" sm="12">
+                                          <h5 className="text-center mb-3 font-weight-bold">Formalização Digital</h5>
+                                          <p className="text-muted">Olá <span className="font-weight-bold text-dark">{DADOS_CLIENTE.DESCRICAO}</span>,</p>
+                                          <p className="text-muted">sua proposta está passando por uma análise.</p>
+                                          <p className="text-muted">Por favor, retorne novamente neste mesmo link dentro de alguns minutos.</p>
+                                          <p className="text-muted">A FACTA agradece a compreensão.</p>
+
+                                        </Col>
+                                      </Row>
+                                   </CardBody>
+                                   </Card>
+                                }
                           </Col>
                         }
 
