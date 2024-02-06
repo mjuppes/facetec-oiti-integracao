@@ -2062,7 +2062,6 @@ class FaceApiUnico extends Component {
       await this.getDadosDocSimply();
       await this.getIdInclusao();
 
-      alert(this.state.tirarSelfie +'  -  '+  this.state.id_unico +'  -  '+ this.state.access_token +'  -  '+ this.state.loadSpinner +'  -  '+ this.state.isVideo +'  -  '+ this.state.scoreReprovado +'  -  '+ this.state.isValidDocumentos +'  -  '+ this.state.isDocSimplyEnviado);
     }
 
     showBtnNewExtract  = () => {
