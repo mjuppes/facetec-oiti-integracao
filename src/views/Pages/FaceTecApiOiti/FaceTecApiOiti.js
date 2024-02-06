@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Col, Row, Button, Card, CardBody, Modal, ModalBody, ModalHeader } from 'reactstrap';
+import { Col, Row, Button, Card, CardBody } from 'reactstrap';
 import { Link } from "react-router-dom";
 import {isMobile} from 'react-device-detect';
 //import FaceTec from '../FaceTec/FaceTec';
@@ -21,14 +21,19 @@ class FaceTecApiOiti extends Component {
         tipoDocumento: '',
         showCamera: true,
         errorUnico: false,
-        keyComponente : 0
+        isEncerrar : false
       };
   
     }
 
 
-    getImagemOiti = (imagem, success) => {
-      this.setState({ imagem : 'data:image/jpeg;base64,' + imagem, sucessOiti : success, showCamera : false}); //retirar comentario
+    getImagemOiti = (imagem, success, isEncerrar) => {
+      this.setState({ imagem : 'data:image/jpeg;base64,' + imagem, sucessOiti : success, showCamera : false, isEncerrar : isEncerrar}); //retirar comentario
+
+
+      if(isEncerrar) {
+        this.props.getStateSelfieOiti(this.state.imagem, isEncerrar)
+      }
     }
 
 
@@ -74,7 +79,6 @@ class FaceTecApiOiti extends Component {
                         idExternoCliente = {this.props.codigoAF}
                         getImagemOiti = {this.getImagemOiti}
                         showMessageErrorOiti = {this.showMessageErrorOiti}
-                        key = {this.state.keyComponente}
                       />
                   </div>
                 }

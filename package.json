@@ -65,7 +65,7 @@
     "react-webcam": "^5.2.2",
     "reactstrap": "^8.4.1",
     "simple-line-icons": "^2.4.1",
-    "unico-webframe": "^3.8.1"
+    "unico-webframe": "^3.9.2"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^6.4.0",

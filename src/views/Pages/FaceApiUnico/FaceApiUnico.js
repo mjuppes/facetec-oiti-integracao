@@ -168,8 +168,38 @@ class FaceApiUnico extends Component {
         showModalExtrato: false,
         isComplementar : false,
         id_inclusao : false,
-        isOiti : true,
-        processouOiti : false
+        isOiti : false,
+        processouOiti : false,
+
+
+         //Variáveis validação Existe Em simply
+
+        labelBtnDocSimply : '',
+        codigoAfSimplyDoc : '',
+        existDocSimply : false,
+				CodigoSimply : '',
+				codigo_af: '',
+				documento_1: '',
+				assertividade_1: '',
+				documento_2: '',
+				assertividade_2: '',
+				response: '',
+				datahora: '',
+				response_2: '',
+				CodigoSolicitacao_2: '',
+				DataSolicitacao_2: '',
+				DataProcessamento_2: '',
+				datahora_2: '',
+				Status_2: '',
+				tipo_botao: '',
+				documentoFace: '',
+				assertividadeFace: '',
+				qualidadeFace: '',
+				FaceMatch: '',
+				qualidade_1: '',
+				qualidade_2: '',
+        isDocSimplyEnviado : false,
+        isFranquia: false,
       };
 
       if (this.props.location.state === undefined || this.props.location.state === '') {
@@ -2000,6 +2030,28 @@ class FaceApiUnico extends Component {
 
     }
 
+    tirarSelfie = () => {
+      const FormData = require('form-data');
+      const formData = new FormData();
+      formData.append('codigoaf', this.state.codigoAFOriginal);
+      formData.append('tipo_operacao', this.state.tipo_operacao);
+      formData.append('averbador', this.state.averbador);
+      axios.post('https://app.factafinanceira.com.br/proposta/getStatusServicoUnico',
+      formData).then(async (response) => {
+
+        if(response.data.servicoUnico === false) {
+          this.setState({tirarSelfie : true, isOiti : true });
+        }
+        if(response.data.servicoUnico === true) {
+          this.setState({tirarSelfie : true, isOiti : response.data.isOiti });
+        }
+      })
+      .catch((error) => {
+        console.log(error)
+      });
+
+    }
+
     async componentDidMount() {
       if (this.props.location.state === undefined || this.props.location.state === '') {
           this.props.history.push(this.state.homeLink);
@@ -2009,6 +2061,8 @@ class FaceApiUnico extends Component {
 
       await this.getDadosDocSimply();
       await this.getIdInclusao();
+
+      alert(this.state.tirarSelfie +'  -  '+  this.state.id_unico +'  -  '+ this.state.access_token +'  -  '+ this.state.loadSpinner +'  -  '+ this.state.isVideo +'  -  '+ this.state.scoreReprovado +'  -  '+ this.state.isValidDocumentos +'  -  '+ this.state.isDocSimplyEnviado);
     }
 
     showBtnNewExtract  = () => {
@@ -2314,7 +2368,7 @@ class FaceApiUnico extends Component {
                                                 <Row className="mt-3">
                                                     <Col xs="12" sm="12" className="text-center">
                                                     <Button className="btn-block font-weight-bold" color="outline-primary" size="lg" 
-                                                      onClick={ () => this.setState({ tirarSelfie : true /*isDocSimplyEnviado : true*/}) }
+                                                      onClick={ () => this.tirarSelfie() }
                                                       >
                                                         Tirar Selfie
                                                     </Button>
@@ -2327,7 +2381,7 @@ class FaceApiUnico extends Component {
                                     </Col>
                                 }
 
-                                {(this.state.tirarSelfie === true && this.state.isOiti === true && this.state.processouOiti === false) && /* SELFIE */
+                                {(this.state.tirarSelfie === true && this.state.isOiti === true && this.state.isDocSimplyEnviado === false && this.state.processouOiti === false) && /* SELFIE */
                                   <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
                                     <FaceTecApiOiti 
                                       codigoAF = {atob(this.state.codigoAFOriginal)}
@@ -2345,7 +2399,7 @@ class FaceApiUnico extends Component {
                                 }
 
 
-                                {(this.state.tirarSelfie === true && this.state.isOiti === false) && /* SELFIE */
+                                {(this.state.tirarSelfie === true && this.state.isOiti === false && this.state.isDocSimplyEnviado === false) && /* SELFIE */
                                     <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
                                        <EnvioSelfieUnico
                                           voltarInicioUnicoSelfie = {this.voltarInicioUnicoSelfie}
