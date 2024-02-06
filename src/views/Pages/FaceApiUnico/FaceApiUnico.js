@@ -2,11 +2,13 @@ import React, { Component } from 'react';
 import { Col, Row, Button, Card, CardBody, Modal, ModalBody, ModalHeader } from 'reactstrap';
 import { Link } from "react-router-dom";
 import {isMobile} from 'react-device-detect';
+import md5 from 'md5';
 import Spinner from '../../Spinner';
 import TimelineProgresso from '../../TimelineProgresso';
 import LayoutFactaHeader from '../../../LayoutFactaHeader';
 import DocumentosUnico from '../DocumentosUnico/DocumentosUnico';
 import EnvioSelfieUnico from '../EnvioSelfieUnico/EnvioSelfieUnico';
+import LayoutFactaCarregando from '../../../LayoutFactaCarregando';
 import EnvioDocumentoUnicoCNH from '../EnvioDocumentoUnicoCNH/EnvioDocumentoUnicoCNH';
 import EnvioDocumentoUnicoCIM from '../EnvioDocumentoUnicoCIM/EnvioDocumentoUnicoCIM';
 import CardAnalfabeto from '../EnvioDocAnalfabeto/CardAnalfabeto';
@@ -33,6 +35,7 @@ import axios from 'axios';
 const URL_API = 'https://app.factafinanceira.com.br/api3';
 const URL_API_BIO = 'https://app.factafinanceira.com.br/API3PROD';
 const URL_APISIMPLY = 'https://app.factafinanceira.com.br/ProcessaDocumentoSimply';
+const URL_APISIMPLY_BANCO = 'https://app.factafinanceira.com.br/ProcessaDocumentoSimplyBanco';
 
 class FaceApiUnico extends Component {
     constructor(props) {
@@ -175,8 +178,6 @@ class FaceApiUnico extends Component {
           return false;
       }
 
-      
-
       let _nav         = this.props.location.state;
       let corretorCodigo = "";
 
@@ -197,6 +198,9 @@ class FaceApiUnico extends Component {
         this.state.uf = _nav.obj_proposta.CORRETOR.UF;
         this.state.tipo_operacao = _nav.obj_proposta.Tipo_Operacao;
 
+        this.state.isFranquia = (_nav.obj_proposta.CORRETOR.Franquia === 'S') ? true : false;
+
+
         corretorCodigo  = _nav.obj_proposta.CORRETOR.CODIGO;
         let corretoreRosa   =  [1054, 1525, 1488, 19564, 19790, 1501, 1408, 10760].indexOf(corretorCodigo);
         this.state.isCorretorRosa = ((corretoreRosa !== -1) ? true : false);
@@ -210,7 +214,7 @@ class FaceApiUnico extends Component {
 
         this.state.documentosEnviados = _nav.obj_proposta.S_DADOSPESSOAIS.documentosEnviados;
 
-        if(_nav.obj_proposta.Tipo_Operacao === 17) {
+        if(_nav.obj_proposta.Tipo_Operacao === 17 || _nav.obj_proposta.Tipo_Operacao === 43 || _nav.obj_proposta.Tipo_Operacao === 44) {
           this.state.contrato = _nav.obj_proposta.DADOSPORTABILIDADE.contrato;
         } else {
           this.state.contrato = _nav.obj_proposta.Numero_Contrato;
@@ -222,11 +226,11 @@ class FaceApiUnico extends Component {
         this.state.convenio = _nav.obj_proposta.CONVENIO;
 
 
-        if(parseInt(_nav.obj_proposta.Tipo_Operacao) === 17 || parseInt(_nav.obj_proposta.Tipo_Operacao) === 18 ){
+        if(parseInt(_nav.obj_proposta.Tipo_Operacao) === 17 || parseInt(_nav.obj_proposta.Tipo_Operacao) === 18  || _nav.obj_proposta.Tipo_Operacao === 43 || _nav.obj_proposta.Tipo_Operacao === 44){
           this.state.codVinculado = _nav.obj_proposta.CODIGO_VINCULADO
         }
 
-        let arrayRepresentante = [35,36,37,38,40,42];
+        let arrayRepresentante = [35,36,37,38,40,42,43,44,47,48];
         if(arrayRepresentante.indexOf(parseInt(_nav.obj_proposta.Tipo_Operacao)) !== -1) {
             this.state.isRepresentanteLegal = true;
         }
@@ -267,10 +271,10 @@ class FaceApiUnico extends Component {
       }
 
       //Quando liberar para os outros averbadores
-      let arrAverbadores = [1, 3, 15, 30, 390, 10];
+      let arrAverbadores = [1, 3, 15, 30, 390, 10, 17, 292, 20135, 10226,710];
       this.state.isFgtsAux = (arrAverbadores.indexOf(parseInt(this.state.averbador)) === -1) ? true : false; //Se for FGTS ou Auxílio Brasil
 
-	    if ([15, 390].indexOf(parseInt(this.state.averbador)) !== -1 && parseInt(this.state.documentosEnviados) === 0 && this.state.isPendencia === 'N') {
+	    if ([15, 390, 710].indexOf(parseInt(this.state.averbador)) !== -1 && parseInt(this.state.documentosEnviados) === 0 && this.state.isPendencia === 'N') {
           this.state.enviouDocumentos = false;
           this.state.isValidDocumentos = true;
       }
@@ -286,7 +290,7 @@ class FaceApiUnico extends Component {
       this.state.obj_proposta = _nav.obj_proposta;
 
       this.state.geoCcb = _nav.geoCcb;
-      this.state.codigoAtualizacao = this.state.tipoPendencia !== "normal" && _nav.obj_pendencias !== undefined && _nav.obj_pendencias !== [] ? 'AD3' : this.state.codigoAtualizacao;
+      this.state.codigoAtualizacao = this.state.tipoPendencia !== "normal" && _nav.obj_pendencias !== undefined && _nav.obj_pendencias.length !== 0 ? 'AD3' : this.state.codigoAtualizacao;
       this.state.tipoAnaliseAtualizar = (this.state.tipoPendencia !== "normal" && _nav.obj_pendencias !== undefined && parseInt(_nav.obj_pendencias.length) !== 0) ? _nav.obj_pendencias.statusOcorrenciaAtualizar : this.state.tipoAnaliseAtualizar;
 
       this.state.isEstrangeiro = (this.state.obj_proposta.ESTRANGEIRO === 'SIM' ? true : false);
@@ -302,6 +306,11 @@ class FaceApiUnico extends Component {
          assertividadeVerso : '', 
          tipoArquivoVerso : ''
          });
+    }
+
+    changeProcessoUnico = () => {
+      this.state.isTokenBiometrico = false;
+      this.reloadComponente();
     }
 
   	removeDocumento = (tipoDocumento) => { //Caso específo para identidade 
@@ -353,7 +362,7 @@ class FaceApiUnico extends Component {
   }
 
 
-
+    
     getTipoDocumento = (tipoDocumento) => {
 		    if (tipoDocumento === 'ANALFABETO') { //Se for analfabeto vai retornar para etapaDocumento para selecionar identidade ou CNH da testemunha
             this.setState({
@@ -707,6 +716,10 @@ class FaceApiUnico extends Component {
                 }
             }
 
+            if (documento === false) {
+                this.setState({isDocSimplyEnviado : false});
+            }
+
             if(this.state.isPendencia !== 'S') {
 			        this.state.isScoreExcep = isScoreExcep;
 
@@ -725,10 +738,11 @@ class FaceApiUnico extends Component {
               }
 
               else if(parseInt(this.state.averbador) === 20095 && this.state.analfabeto === 'N') {
+
                       this._finalizaFormalizacao();
               }
               else if(parseInt(this.state.averbador) === 20124 && this.state.analfabeto === 'N') {
-                this._finalizaFormalizacao();
+                    this._finalizaFormalizacao();
               }
               else if (parseInt(this.state.averbador) === 3 && parseInt(this.state.obj_proposta.mesaCreditoTipoBeneficio) === 2 && this.state.obj_proposta.CTRMAG === 'SIM') { //CASO AVERBADOR 3 INSS  REGRA CARTÃO MAGNÉTICO MENOR QUE 90 DIAS
                   //this._finalizaFormalizacao();
@@ -739,6 +753,7 @@ class FaceApiUnico extends Component {
                 if(this.state.vlrseguro > 0) {
                   this.setState({isAudio : true, isComplementar : false});
                 } else {
+
                   this._finalizaFormalizacao();
                 }
               }
@@ -748,6 +763,7 @@ class FaceApiUnico extends Component {
               }
 
               else if (parseInt(this.state.averbador) === 15  && this.state.analfabeto !== 'S') {
+
                 this._finalizaFormalizacao();
               }
 
@@ -789,7 +805,7 @@ class FaceApiUnico extends Component {
 
               
 
-              else if(parseInt(this.state.corretorClassificacao) === 1 && parseInt(this.state.averbador) === 390 ){ //Classificação 1 loja e o 2 é corretor
+              else if(parseInt(this.state.corretorClassificacao) === 1 && (parseInt(this.state.averbador) === 390 || parseInt(this.state.averbador) === 710)){ //Classificação 1 loja e o 2 é corretor
 
                 if (tipoEtapa === 'DIG'){
                   this.setState({isAudio : true});
@@ -807,6 +823,7 @@ class FaceApiUnico extends Component {
 
               else if((parseInt(this.state.corretorClassificacao) === 1 )
               && parseInt(this.state.averbador) !== 20095 && (tipoEtapa !== 'DIG' || tipoEtapa !== 'PRE' || tipoEtapa.toString() == 'NULL') ){
+
                   this._finalizaFormalizacao();
               }
 
@@ -815,6 +832,7 @@ class FaceApiUnico extends Component {
               }
 
               else if((parseInt(this.state.corretorClassificacao) == 1 && parseInt(this.state.averbador) != 20095) && (tipoEtapa !== 'DIG' || tipoEtapa !== 'PRE') ){
+
                 this._finalizaFormalizacao();
               }
 
@@ -952,8 +970,9 @@ class FaceApiUnico extends Component {
              || parseInt(this.state.averbador) === 1 || parseInt(this.state.averbador) === 15
              || parseInt(this.state.averbador) === 30 || parseInt(this.state.averbador) === 390
              || parseInt(this.state.averbador) === 10226 || parseInt(this.state.averbador) === 20124
-             || parseInt(this.state.averbador) === 23 || parseInt(this.state.averbador) === 10
-             
+             || parseInt(this.state.averbador) === 23 || parseInt(this.state.averbador) === 10 || parseInt(this.state.averbador) === 315
+             || parseInt(this.state.averbador) === 17 || parseInt(this.state.averbador) === 292 || parseInt(this.state.averbador) === 20135 
+             || parseInt(this.state.averbador) === 710
            )
       ) {
 
@@ -966,8 +985,7 @@ class FaceApiUnico extends Component {
         let blob_fotoDocumentoVerso = "";
         let blob_base64Video = "";
 
-        console.log(typeof(this.state.imagemSelfie));
-        console.log('testelog: '+this.state.imagemSelfie);
+
         if (this.state.isCNH === true) {
               blob_fotoDocumentoFrente = await fetch(this.state.imagemCNH).then(res => res.blob());
               formData.append('CNH', blob_fotoDocumentoFrente);
@@ -1134,7 +1152,7 @@ class FaceApiUnico extends Component {
         formData.set('cliente_nascimento', this.state.cliente_nascimento);
   
         var informacoesDoDispositivo = "";
-        if (this.state.tipoPendencia !== "normal" && this.state.obj_pendencias !== undefined && this.state.obj_pendencias !== []) {
+        if (this.state.tipoPendencia !== "normal" && this.state.obj_pendencias !== undefined && this.state.obj_pendencias.length !== 0) {
           informacoesDoDispositivo += "\r\nRESOLUÇÃO DE PENDÊNCIAS\r\n\r\n";
           formData.set('resolucaoPendencias', 1);
           formData.set('gerarNovaCcb', this.state.obj_pendencias.pendencia_de_valores === true ? 1 : 0);
@@ -1191,7 +1209,45 @@ class FaceApiUnico extends Component {
           formData.set('isErroFaceMatch', this.state.isErroFaceMatch);
         }
 
+        if(this.state.codigoAfSimplyDoc !== '') {
+          formData.set('codigoAfSimplyDoc', this.state.codigoAfSimplyDoc);
+        }
+
         this.setState({loadSpinner: true, mensagem : 'Finalizando proposta aguarde...'});
+
+        const TIMEOUT_DELAY = 480000; // 8 minutos
+        const requestPromise = axios({
+          method: 'post',
+          url: 'https://app.factafinanceira.com.br/proposta/atualizar_formalizacao',
+          data: formData,
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      
+        const timeoutPromise = new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject(new Error("Erro ao realizar a formalização!"));
+            this.state.proximoLink = '/digital/'+this.props.match.params.propostaId;
+            this.props.history.push(this.state.proximoLink);
+          }, TIMEOUT_DELAY);
+        });
+      
+        try {
+          const response = await Promise.race([requestPromise, timeoutPromise]);
+          console.log(response.data);
+            this.setState({ carregando: false,  mensagem: 'Proposta formalizada com sucesso!!', styleConclusao: 'fa fa-check-square-o text-success' });
+            setTimeout(() => {
+              this.state.proximoLink = '/conclusao/'+this.props.match.params.propostaId;
+              this.props.history.push(this.state.proximoLink);
+            },  2000);
+        } catch (error) {
+          console.error(error);
+          alert(error.message);
+          this.state.proximoLink = '/digital/'+this.props.match.params.propostaId;
+          this.props.history.push(this.state.proximoLink);
+          this.setState({ carregando: false }); 
+        }
+
+        /*
         await axios({
           method: 'post',
           url: 'https://app.factafinanceira.com.br/proposta/atualizar_formalizacao',
@@ -1213,6 +1269,9 @@ class FaceApiUnico extends Component {
             this.setState({ carregando : false });
             alert("Erro ao realizar a formalização!");
         }.bind(this));
+        */
+
+        
   
         return false;
       }  
@@ -1254,6 +1313,7 @@ class FaceApiUnico extends Component {
     }
 
     encerraProposta = async () => {
+
       const FormData = require('form-data');
       const axios = require('axios');
       const formData = new FormData();
@@ -1304,6 +1364,8 @@ class FaceApiUnico extends Component {
 
       formData.set('infoDoDispositivo', informacoesDoDispositivo);
 
+      formData.set('cliente_cpf', this.state.cliente_cpf);
+      formData.set('cliente_nascimento', this.state.cliente_nascimento);
 
       formData.set('proposta', atob(this.state.codigoAFOriginal));
       formData.set('isEncerrar', true);
@@ -1472,10 +1534,6 @@ class FaceApiUnico extends Component {
       return false;
     }
 
-    newExtract = () => {
-      this.reloadComponente();
-      this.state.isExtrato = true;
-    }
 
     addImagemExtrato = (imagemDocumento) => {
       this.state.imagemExtrato.push(imagemDocumento);
@@ -1528,10 +1586,40 @@ class FaceApiUnico extends Component {
               this.state.enviouDocumentos   = true;
               this.state.isContracheque     = false;
             break;
+            default:
+              break;
         }
     }
 
+    authentication = async () => {
+
+      const axios = require('axios');
+
+      let apiUrl = "https://app.factafinanceira.com.br/ProcessaDocumentoSimplyBanco/generateToken";
+
+      const FormData = require('form-data');
+      const formData = new FormData();
+      formData.append('codigoaf', atob(this.state.codigoAFOriginal));
+      formData.append('cpf', this.state.cpf);
+
+      await axios.post(
+        apiUrl,
+        formData).then((response) => {
+          this.setState({tokenDocSimply : response.data.token, tokenExpired : false})
+      })
+      .catch((error) => {
+        console.log('error', error);
+      });
+
+    }
+
 	  validaDocumento = async (imagemDocumento, tipoDocumento) => {
+        if(this.state.tokenDocSimply === '') {
+          await this.authentication();
+        }
+
+        console.log(this.state.tokenDocSimply);
+
         const FormData = require('form-data');
         const formData = new FormData();
 
@@ -1545,170 +1633,220 @@ class FaceApiUnico extends Component {
 
         let nome = (this.state.isRepresentanteLegal === false) ? this.state.nome : this.state.obj_proposta.NOME_REPRESENTANTE;
 
+        ([20095,3].indexOf(this.state.averbador) !== -1) ? this.setState({averbadoresDoc : false}) : this.setState({averbadoresDoc : true});
+
         let blob_imagemSelfie = await fetch(this.state.imagemSelfie).then(res => res.blob());
         formData.append('imagemSelfie', blob_imagemSelfie);
 
         let blob_documento    = await fetch(imagemDocumento).then(res => res.blob());
         formData.append('imagemDocumento', blob_documento);
 
+        const tokenDoc = 'seu_token_aqui'; // Substitua pelo token gerado no PHP
+
         formData.append('tipoDocumento', tipoDocumento);
         formData.append('CodigoLegado', atob(this.state.codigoAFOriginal));
         formData.append('cpf', this.state.cpf);
         formData.append('nome', nome);
         formData.append('averbador', this.state.averbador);
+        formData.append('idsimply', this.state.idsimply);
 
+        formData.append('tokenDoc', tokenDoc);
+
+        
+
+        
+
+        if(this.state.averbadoresDoc === true) {
+          formData.append('averbadoresDoc', this.state.averbadoresDoc);
+        }
+
+        let url_simply =  (!this.state.averbadoresDoc)  ?  URL_APISIMPLY : URL_APISIMPLY_BANCO; //Ajuste realizado para tratamento de dados via procedure
+
+        //let url_simply =  URL_APISIMPLY_BANCO; //Ajuste realizado para tratamento de dados via procedure
+        
         await axios.post(
-          URL_APISIMPLY + "/getProcessDocumentoSimply",
-          formData).then((response) => {
-
-              const assertividadeMin  = 70;
-              let   resultPromisse    = false;
-
-              if (response.data.tipoDocumento !== TIPO_DOCUMENTO.CNH) {
-
-                  let assertividade = response.data.assertividade;
-                  let tipoArquivo   = response.data.tipoArquivo;
-
-                  let tipoArquivoFace   = response.data.tipoArquivoFace;  
-                  let qualidadeFace     = response.data.qualidadeFace;
-
-                  if (response.data.tipoDocumento === TIPO_DOCUMENTO.FRENTE || response.data.tipoDocumento === TIPO_DOCUMENTO.FRENTE_NOVO) {
-                      let assertividadeFace           = response.data.assertividadeFace;
-                      let faceMatch                   = response.data.faceMatch;
-
-                      this.state.tipoArquivoFace      = tipoArquivoFace;
-                      this.state.assertividadeFace    = assertividadeFace;
-                      this.state.qualidadeFace        = qualidadeFace;
-
-                      this.state.tipoArquivoFrente    = tipoArquivo;
-                      this.state.faceMatch            = faceMatch;
-                      this.state.assertividadeFrente  = assertividade;
-
-                      this.state.qualidadeFrente      = response.data.qualidadeFrente;
-                      this.state.tipoDoc              = response.data.tipoDocumento.toString()
+          url_simply + "/getProcessDocumentoSimply",
+          formData, {headers: {
+            'Authorization': 'Bearer '+this.state.tokenDocSimply
+        }}).then((response) => {
+              if (response.data.tokenExpired === true) {
+                  //alert('Erro ao autenticar o documento. Por favor, tente novamente.');
+                  this.setState({tokenDocSimply : '', tokenExpired : true});
 
 
-                      if(response.data.tipoDocumento === TIPO_DOCUMENTO.FRENTE && response.data.alfabetizadoTexto === 'N' && this.state.averbador === 3) {
-                        this.setState({isAnalfabetoEnvDoc : false, analfabeto : 'S'});
-                      }
+             } else {
 
-                      if(response.data.tipoDocumento === TIPO_DOCUMENTO.FRENTE && response.data.alfabetizadoTexto === 'S' && this.state.averbador === 3) {
-                        this.setState({analfabeto : 'N'});
-                      }
+                const assertividadeMin  = 70;
+                let   resultPromisse    = false;
 
-                      
-                      if (parseInt(tipoArquivo) === 103) {
-                          resultPromisse = ( (assertividade > assertividadeMin)  ? true : false);
-                      }
-                  }
+                if (response.data.tipoDocumento !== TIPO_DOCUMENTO.CNH) {
 
-                  if (response.data.tipoDocumento === TIPO_DOCUMENTO.VERSO || response.data.tipoDocumento === TIPO_DOCUMENTO.VERSO_NOVO) {
-                      this.state.assertividadeVerso  =  assertividade;
-                      this.state.tipoArquivoVerso    =  tipoArquivo;
-                      this.state.qualidadeVerso      =  response.data.qualidadeVerso;
-                      this.state.tipoDoc             =  response.data.tipoDocumento.toString();
+                    let assertividade = response.data.assertividade;
+                    let tipoArquivo   = response.data.tipoArquivo;
 
-                      if (parseInt(tipoArquivo) === 104) {
-                          let isFaceName = true;
+                    let tipoArquivoFace   = response.data.tipoArquivoFace;  
+                    let qualidadeFace     = response.data.qualidadeFace;
 
-                          /*
-                            if(response.data.tipoDocumento === TIPO_DOCUMENTO.VERSO) {
-                              isFaceName =  ((response.data.nomeTexto.trim().toLowerCase() === this.state.nome.trim().toLowerCase()) ? true : false);
-                            }
-                          */
+                    if (response.data.tipoDocumento === TIPO_DOCUMENTO.FRENTE || response.data.tipoDocumento === TIPO_DOCUMENTO.FRENTE_NOVO) {
+                        let assertividadeFace           = response.data.assertividadeFace;
+                        let faceMatch                   = response.data.faceMatch;
 
-                          if(isFaceName) {
-                              resultPromisse  = ((assertividade > assertividadeMin)  ? true : false);
+                        this.state.tipoArquivoFace      = tipoArquivoFace;
+                        this.state.assertividadeFace    = assertividadeFace;
+                        this.state.qualidadeFace        = qualidadeFace;
 
-                              if (resultPromisse === true) {
-                                if (this.state.faceMatch < assertividadeMin) {
-                                    resultPromisse = false;
-                                    this.setState({ isErroFaceMatch : true });
-                                } else {
-                                    this.setState({ isErroFaceMatch : false });
-                                }
-                              }
-                          } else {
-                            this.setState({ isErroFaceMatch : true });
-                          }
+                        this.state.tipoArquivoFrente    = tipoArquivo;
+                        this.state.faceMatch            = faceMatch;
+                        this.state.assertividadeFrente  = assertividade;
 
-                      }
-                  }
+                        this.state.qualidadeFrente      = response.data.qualidadeFrente;
+                        this.state.tipoDoc              = response.data.tipoDocumento.toString()
 
-              } else {
-                  //Se não será uma CNH
-                  //Fazer a mesma coisa para a cnh
-                  let assertividadeFrente = (response.data.assertividadeFrente);
-                  let assertividadeVerso  = 0;
-                  let faceMatch           = (response.data.faceMatch);
-
-                  if (response.data.assertividadeVerso !== false) {
-                      assertividadeVerso = (response.data.assertividadeVerso);
-                  }
-
-                  let tipoArquivoFrente  = (response.data.tipoArquivoFrente);
-                  let tipoArquivoVerso   = (response.data.tipoArquivoVerso);
-
-                  let tipoArquivoFace    = (response.data.tipoArquivoFace);
-
-                  let assertividadeFace  = (response.data.assertividadeFace);
-                  let qualidadeFace      = (response.data.qualidadeFace);
-
-                  let qualidadeFrente    = (response.data.qualidadeFrente);
-                  let qualidadeVerso     = (response.data.qualidadeVerso);
-
-                  this.state.tipoArquivoFace      = tipoArquivoFace;
-                  this.state.assertividadeFace    = assertividadeFace;
-                  this.state.qualidadeFace        = qualidadeFace;
-                  this.state.qualidadeVerso       = qualidadeVerso;
-                  this.state.qualidadeFrente      = qualidadeFrente;
-                  this.state.faceMatch            = faceMatch;
-                  this.state.assertividadeFrente  = assertividadeFrente;
-                  this.state.assertividadeVerso   = assertividadeVerso;
-                  this.state.tipoArquivoFrente    = tipoArquivoFrente;
-                  this.state.tipoArquivoVerso     = tipoArquivoVerso;
-                  this.state.tipoDoc              = response.data.tipoDocumento;
-
-                  if ( ((tipoArquivoFrente === 105) || (tipoArquivoFrente === 121)) &&
-                  ((tipoArquivoVerso === 105) || (tipoArquivoVerso === 121)) ) {
-
-                    let isFaceName = true;
-
-                    //let nomeTexto = response.data.nomeTexto.trim().toLowerCase();
-                    //isFaceName =  ((nomeTexto === this.state.nome.trim().toLowerCase()) ? true : false);
-
-                    if(isFaceName) {
-                        resultPromisse  = ( (assertividadeFrente < assertividadeMin || assertividadeVerso < assertividadeMin)  ) ? false : true;
-
-                        if (resultPromisse === true) { //Se documento verso estiver ok vai validar o FaceMatch
-                            if (this.state.faceMatch < assertividadeMin) {
-                                resultPromisse = false;
-                                this.setState({ isErroFaceMatch : true });
-                            } else {
-                                this.setState({ isErroFaceMatch : false });
-                            }
+                        if(this.state.averbadoresDoc === true) {
+                            this.state.idsimply       = response.data.idsimply;
                         }
-                    } else {
-                      
-                      this.setState({ isErroFaceMatch : true });
-                    }
-                  }
-              }
 
-              this.state.responseText       =  response.data.responseText;
-              this.state.CodigoSolicitacao  =  response.data.CodigoSolicitacao;
-              this.state.Status             =  response.data.Status           ;
-              this.state.DataSolicitacao    =  response.data.DataSolicitacao  ;
-              this.state.DataProcessamento  =  response.data.DataProcessamento;
-              this.state.nomeTexto          =  response.data.nomeTexto        ;
-              this.state.resultPromisse     =  resultPromisse   ;
+                        if(response.data.tipoDocumento === TIPO_DOCUMENTO.FRENTE && response.data.alfabetizadoTexto === 'N' && this.state.averbador === 3) {
+                          this.setState({isAnalfabetoEnvDoc : false, analfabeto : 'S'});
+                        }
+
+                        if(response.data.tipoDocumento === TIPO_DOCUMENTO.FRENTE && response.data.alfabetizadoTexto === 'S' && this.state.averbador === 3) {
+                          this.setState({analfabeto : 'N'});
+                        }
+
+                        if (parseInt(tipoArquivo) === 103) {
+                            resultPromisse = ( (assertividade > assertividadeMin)  ? true : false);
+                        }
+                    }
+
+                    if (response.data.tipoDocumento === TIPO_DOCUMENTO.VERSO || response.data.tipoDocumento === TIPO_DOCUMENTO.VERSO_NOVO) {
+                        this.state.assertividadeVerso  =  assertividade;
+                        this.state.tipoArquivoVerso    =  tipoArquivo;
+                        this.state.qualidadeVerso      =  response.data.qualidadeVerso;
+                        this.state.tipoDoc             =  response.data.tipoDocumento.toString();
+
+                        if (parseInt(tipoArquivo) === 104) {
+                            let isFaceName = true;
+
+                            /*
+                              if(response.data.tipoDocumento === TIPO_DOCUMENTO.VERSO) {
+                                isFaceName =  ((response.data.nomeTexto.trim().toLowerCase() === this.state.nome.trim().toLowerCase()) ? true : false);
+                              }
+                            */
+
+                            if(isFaceName) {
+                                resultPromisse  = ((assertividade > assertividadeMin)  ? true : false);
+
+                                if (resultPromisse === true) {
+                                  if (this.state.faceMatch < assertividadeMin) {
+                                      resultPromisse = false;
+                                      this.setState({ isErroFaceMatch : true });
+                                  } else {
+                                      this.setState({ isErroFaceMatch : false });
+                                  }
+                                }
+                            } else {
+                              this.setState({ isErroFaceMatch : true });
+                            }
+
+                        }
+                    }
+
+                } else {
+                    //Se não será uma CNH
+                    //Fazer a mesma coisa para a cnh
+                    let assertividadeFrente = (response.data.assertividadeFrente);
+                    let assertividadeVerso  = 0;
+                    let faceMatch           = (response.data.faceMatch);
+
+                    if (response.data.assertividadeVerso !== false) {
+                        assertividadeVerso = (response.data.assertividadeVerso);
+                    }
+
+                    let tipoArquivoFrente  = (response.data.tipoArquivoFrente);
+                    let tipoArquivoVerso   = (response.data.tipoArquivoVerso);
+
+                    let tipoArquivoFace    = (response.data.tipoArquivoFace);
+
+                    let assertividadeFace  = (response.data.assertividadeFace);
+                    let qualidadeFace      = (response.data.qualidadeFace);
+
+                    let qualidadeFrente    = (response.data.qualidadeFrente);
+                    let qualidadeVerso     = (response.data.qualidadeVerso);
+
+                    this.state.tipoArquivoFace      = tipoArquivoFace;
+                    this.state.assertividadeFace    = assertividadeFace;
+                    this.state.qualidadeFace        = qualidadeFace;
+                    this.state.qualidadeVerso       = qualidadeVerso;
+                    this.state.qualidadeFrente      = qualidadeFrente;
+                    this.state.faceMatch            = faceMatch;
+                    this.state.assertividadeFrente  = assertividadeFrente;
+                    this.state.assertividadeVerso   = assertividadeVerso;
+                    this.state.tipoArquivoFrente    = tipoArquivoFrente;
+                    this.state.tipoArquivoVerso     = tipoArquivoVerso;
+                    this.state.tipoDoc              = response.data.tipoDocumento;
+
+                    if ( ((tipoArquivoFrente === 105) || (tipoArquivoFrente === 121)) &&
+                    ((tipoArquivoVerso === 105) || (tipoArquivoVerso === 121)) ) {
+
+                      let isFaceName = true;
+
+                      //let nomeTexto = response.data.nomeTexto.trim().toLowerCase();
+                      //isFaceName =  ((nomeTexto === this.state.nome.trim().toLowerCase()) ? true : false);
+
+                      if(isFaceName) {
+                          resultPromisse  = ( (assertividadeFrente < assertividadeMin || assertividadeVerso < assertividadeMin)  ) ? false : true;
+
+                          if (resultPromisse === true) { //Se documento verso estiver ok vai validar o FaceMatch
+                              if (this.state.faceMatch < assertividadeMin) {
+                                  resultPromisse = false;
+                                  this.setState({ isErroFaceMatch : true });
+                              } else {
+                                  this.setState({ isErroFaceMatch : false });
+                              }
+                          }
+                      } else {
+                        
+                        this.setState({ isErroFaceMatch : true });
+                      }
+                    }
+                }
+
+                this.state.responseText       =  response.data.responseText;
+                this.state.CodigoSolicitacao  =  response.data.CodigoSolicitacao;
+                this.state.Status             =  response.data.Status           ;
+                this.state.DataSolicitacao    =  response.data.DataSolicitacao  ;
+                this.state.DataProcessamento  =  response.data.DataProcessamento;
+                this.state.nomeTexto          =  response.data.nomeTexto        ;
+                this.state.resultPromisse     =  resultPromisse   ;
+            }
         })
         .catch((error) => {
           console.log('error', error);
         });
 
-        let ret = await this.gravaDadosDocumentoSimply();
-        return this.state.resultPromisse;
+
+        let resultPromise = false;
+        let isErroFaceMatch = false;
+
+        if(this.state.tokenExpired === false) {
+            if(this.state.averbadoresDoc === false) {
+                let ret = await this.gravaDadosDocumentoSimply();
+            }
+
+            resultPromise = this.state.resultPromisse;
+            isErroFaceMatch = this.state.isErroFaceMatch;
+
+        } else {
+            resultPromise = false;
+            isErroFaceMatch = false;
+        }
+
+        if(resultPromise === false && (tipoDocumento === TIPO_DOCUMENTO.FRENTE || tipoDocumento === TIPO_DOCUMENTO.FRENTE_NOVO)) {
+          this.setState({idsimply: ''});
+        }
+
+        return {resultPromise, isErroFaceMatch};
     }
 
 
@@ -1776,12 +1914,14 @@ class FaceApiUnico extends Component {
     }
 
     
-    getIdInclusao = () => {
+    getIdInclusao = async () => {
       this.setState({loadSpinner : true, showCamera : false, mensagem : 'Carregando dados...'})
+
+      let cpf = (this.state.isRepresentanteLegal === false) ? this.state.cliente_cpf : this.state.obj_proposta.CPF_REPRESENTANTE;
 
       const FormData = require('form-data');
       const formData = new FormData();
-      formData.append('cpf', this.state.cliente_cpf);
+      formData.append('cpf', cpf);
       formData.append('tipo_operacao', this.state.tipo_operacao);
       
 
@@ -1794,13 +1934,81 @@ class FaceApiUnico extends Component {
       });
     }
 
-    componentDidMount() {
+    getDadosDocSimply = async () => {
+      this.setState({loadSpinner : true, showCamera : false, mensagem : 'Carregando dados...'})
+
+      const FormData = require('form-data');
+      const formData = new FormData();
+      formData.append('cpf', this.state.cliente_cpf); //validar a questão do representante legal
+      formData.append('codigoAF', atob(this.state.codigoAFOriginal));
+      axios.post(URL_APISIMPLY + "/getDadosDocSimply",
+      formData).then(async (response) => {
+        //console.log(response.data);
+
+        if(response.data.existDocSimply === true) {
+
+          this.setState({codigoAfSimplyDoc : response.data.codigoAfSimplyDoc, existDocSimply : response.data.existDocSimply})
+
+            const {
+              corretorClassificacao,
+              mesaCreditoTipoBeneficio,
+              analfabeto,
+              vlrseguro,
+              averbador,
+            } = this.state;
+
+            let labelBtnDocSimply = 'Ir para próxima etapa';
+
+            if (parseInt(corretorClassificacao) === 1) {
+              if (parseInt(mesaCreditoTipoBeneficio) === 1 && (analfabeto === 'S' || vlrseguro > 0)) {
+                labelBtnDocSimply = 'Ir para próxima etapa';
+              } else {
+                labelBtnDocSimply = 'Confirmar a assinatura';
+              }
+            } else if (averbador === 20095) {
+              labelBtnDocSimply = 'Confirmar a assinatura';
+            }
+
+            this.setState({ labelBtnDocSimply });
+        }
+
+      })
+      .catch((error) => {
+        console.log(error)
+      });
+    }
+
+    setDocSimplyEnviado = async (imagemSelfie) => {
+      const FormData = require('form-data');
+      const formData = new FormData();
+
+      let blob_base64SelfieIni = await fetch(imagemSelfie).then(res => res.blob());
+      formData.append('SelfieIni', blob_base64SelfieIni);
+      formData.append('codigoAF', atob(this.state.codigoAFOriginal));
+
+      let url = 'https://app.factafinanceira.com.br/gravaArquivo';
+  
+      axios.post(
+        url + "/gravaSelfie",
+      formData).then((response) => {
+          this.setState({isDocSimplyEnviado : true, loadSpinner : false, tirarSelfie : false, imagemSelfie : imagemSelfie, id_unico : true});
+       })
+      .catch((error) => {
+        console.log(error);
+        console.log('error', error);
+      });
+
+    }
+
+    async componentDidMount() {
       if (this.props.location.state === undefined || this.props.location.state === '') {
           this.props.history.push(this.state.homeLink);
           this.state.obj_proposta = [];
           return false;
       }
-      this.getIdInclusao();
+
+      await this.getDadosDocSimply();
+      await this.getIdInclusao();
     }
 
     showBtnNewExtract  = () => {
@@ -1808,6 +2016,7 @@ class FaceApiUnico extends Component {
       this.setState({isExtrato : true, enviouDocumentos: true}) 
       
     } 
+
 
     render() {
         /* Codigos para configuracao UNICO */
@@ -1849,6 +2058,17 @@ class FaceApiUnico extends Component {
         const colunaBtn = {
           'margin-bottom': '10px'
         };
+       
+        const tamanhoImgMobile = {
+          'width' : '100%',
+          'height' : 'auto'
+        }
+      
+        const tamanhoImgDesk = {
+            'width' : '100%',
+            'height' : 'auto'
+
+        }
 
 
         return (
@@ -1913,7 +2133,7 @@ class FaceApiUnico extends Component {
                                             <p className="text-center">Agora vamos precisar que você tire foto do seu 
                                             {
                                               this.state.averbador === 15 ? ' contracheque'
-                                              : (this.state.averbador === 390) ? ' extrato  bancário, comprovante de residência e do cadastro de optante' : null
+                                              : (this.state.averbador === 390 || this.state.averbador === 710) ? ' extrato  bancário, comprovante de residência e do cadastro de optante' : null
                                             } .
                                             </p>
                                           </Col>
@@ -1922,7 +2142,7 @@ class FaceApiUnico extends Component {
                                               <Col xs="12" sm="12">
                                                 <Button size="lg" color="outline-success" className="font-weight-bold" onClick={() => {
                                                   this.setState({
-                                                    isExtrato : (this.state.averbador === 390) ? true : false,
+                                                    isExtrato : (this.state.averbador === 390 || this.state.averbador === 710) ? true : false,
                                                     isContracheque : (this.state.averbador === 15) ? true : false,
                                                     enviouDocumentos: true}) 
                                                     }}>
@@ -1986,7 +2206,6 @@ class FaceApiUnico extends Component {
                                               tipoDocumento = {CONFIG.CTPS}
                                               onClick = {this.reloadComponente.bind(this)}
                                               setDocContraCheque = {this.setDocContraCheque}
-                                              newExtract = {this.newExtract}
                                               deleteExtract = {this.deleteExtract}
                                               addImagemExtrato = {this.addImagemExtrato}
                                               showBtnnewExtract = {true}
@@ -2025,7 +2244,40 @@ class FaceApiUnico extends Component {
                                     </Col>
                                 }
 
-                                {(this.state.tirarSelfie === false && this.state.id_unico === false && this.state.access_token === false && this.state.loadSpinner === false && this.state.isVideo === false && this.state.scoreReprovado === false  && this.state.isValidDocumentos === false) &&
+                                {(this.state.isDocSimplyEnviado ===  true) && 
+                                  <Col md={{size: isMobile ? 10 : 6, offset: isMobile ? 1 : 0}}>
+                                    <Card className="border-white shadow" style={{borderRadius: '8px'}}>
+                                      <CardBody>
+                                        <Row className="mt-3 text-justify">
+                                          <Col xs="12" sm="12">
+                                            <h5 className="text-center mb-3 font-weight-bold">ENVIO DE DOCUMENTOS</h5>
+                                            <p className="text-muted">Como você já é nosso cliente, será beneficiado nesta nova contratação. </p>
+                                            <p className="text-muted">Por já termos aprovado os seus documentos em uma contratação anterior, iremos utilizar as imagens do mesmo documento de identificação validado, tornando assim, o seu processo de contratação mais fácil, rápido e descomplicado. </p>
+                                            <p className="text-muted">Clique em "{ this.state.labelBtnDocSimply }" e desfrute deste benefício que só quem é cliente FACTA possui. </p>
+                                          </Col>
+                                          <Col className="text-center" md="12" lg="12" xs="12" sm="12">
+                                              <img src={ require('../../../assets/img/doc_enviado.jpg') } alt="Selfie" className="w-40" style={ isMobile === true ? tamanhoImgMobile : tamanhoImgDesk}/>
+                                        </Col>
+                                          <Col xs="12" sm="12">
+                                            <Row className="mt-3">
+                                              <Col xs="12" sm="12">
+                                              <Button className="btn-block font-weight-bold" color="outline-primary" size="lg" onClick={()=>
+                                                                                  this.setEtapaAudioVideo(false, false, this.state.codigotabela)}
+                                                                                  >
+                                                      { this.state.labelBtnDocSimply }
+                                                    </Button>
+                                              </Col>
+                                            </Row>
+                                          </Col>
+
+                                        </Row>
+                                      </CardBody>
+                                    </Card>
+                                    </Col>
+                                }
+
+
+                                {(this.state.tirarSelfie === false && this.state.id_unico === false && this.state.access_token === false && this.state.loadSpinner === false && this.state.isVideo === false && this.state.scoreReprovado === false  && this.state.isValidDocumentos === false && this.state.isDocSimplyEnviado === false) &&
                                     <Col md={{size: isMobile ? 10 : 6, offset: isMobile ? 1 : 0}}>
                                         <Card className="border-white shadow" style={{borderRadius: '8px'}}>
                                             <CardBody>
@@ -2062,7 +2314,7 @@ class FaceApiUnico extends Component {
                                                 <Row className="mt-3">
                                                     <Col xs="12" sm="12" className="text-center">
                                                     <Button className="btn-block font-weight-bold" color="outline-primary" size="lg" 
-                                                      onClick={ () => this.setState({ tirarSelfie : true}) }
+                                                      onClick={ () => this.setState({ tirarSelfie : true /*isDocSimplyEnviado : true*/}) }
                                                       >
                                                         Tirar Selfie
                                                     </Button>
@@ -2094,8 +2346,7 @@ class FaceApiUnico extends Component {
 
 
                                 {(this.state.tirarSelfie === true && this.state.isOiti === false) && /* SELFIE */
-                                  <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
-                                      <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
+                                    <Col xs={ isMobile ? 12 : 6} sm={ isMobile ? 12 : 6} md={ isMobile ? 12 : 6} className="p-0" style={{'height' : (window.screen.height * 0.85) + 'px'}}>
                                        <EnvioSelfieUnico
                                           voltarInicioUnicoSelfie = {this.voltarInicioUnicoSelfie}
                                           tentativaUnico = {this.state.tentativaUnico}
@@ -2109,9 +2360,16 @@ class FaceApiUnico extends Component {
                                           key = {this.state.keyComponente}
                                           onClick = {this.reloadComponente.bind(this)}
                                           getStateSelfie = {this.getStateSelfie}
+                                          tipo_operacao = {this.state.tipo_operacao}
+                                          codVinculado = {this.state.codVinculado}
+                                          id_inclusao = {this.state.id_inclusao}
+                                          isTokenBiometrico = {this.state.isTokenBiometrico}
+                                          changeProcessoUnico = {this.changeProcessoUnico}
+                                          existDocSimply = {this.state.existDocSimply}
+                                          setDocSimplyEnviado = {this.setDocSimplyEnviado}
+                                          encerraProposta = {this.encerraProposta}
                                         />
                                     </Col>
-                                  </Col>
                                 }
 
                                 {(this.state.documentosUnico === true) && /* TIPOS DE DOCUMENTOS UNICO */
@@ -2123,6 +2381,9 @@ class FaceApiUnico extends Component {
 										                      isEstrangeiro = {this.state.isEstrangeiro}
 										                      isAnalfabetoEnvDoc = {this.state.isAnalfabetoEnvDoc}
                                           averbador = {this.state.averbador}
+                                          corretorClassificacao = {this.state.corretorClassificacao}
+                                          isFranquia = {this.state.isFranquia}
+                                          tipo_operacao = {this.state.tipo_operacao}
                                         />
                                     </Col>
                                 }
@@ -2704,7 +2965,6 @@ class FaceApiUnico extends Component {
                     </Row>
                   </Col>
                 </Col>
-
           </div>            
         );
     }
